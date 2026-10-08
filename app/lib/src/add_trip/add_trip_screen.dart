@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 
 import '../api/api_client.dart';
 import '../format.dart';
+import 'clock_input.dart';
 
 class AddTripScreen extends StatefulWidget {
   const AddTripScreen({
@@ -26,7 +27,6 @@ class AddTripScreen extends StatefulWidget {
 
 class _AddTripScreenState extends State<AddTripScreen> {
   static const _fieldKeys = {'start', 'end', 'amount', 'commission', 'payment'};
-  static final _clock = RegExp(r'^(\d{1,2}):(\d{2})$');
 
   // Generated once per screen. Every retry re-sends the same id, so a request
   // that reached the server before the connection dropped is not saved twice.
@@ -53,14 +53,12 @@ class _AddTripScreenState extends State<AddTripScreen> {
     super.dispose();
   }
 
-  /// ISO-8601 timestamp in the driver offset, or null when [clock] is not
-  /// `ЧЧ:ММ` — `validateTrip` then reports the field.
+  /// ISO-8601 timestamp in the driver offset, or null when [clock] is not a
+  /// valid time — `validateTrip` then reports the field.
   String? _timestamp(LocalDate date, String clock) {
-    final match = _clock.firstMatch(clock.trim());
-    if (match == null) return null;
-    final hour = match[1]!.padLeft(2, '0');
-    return '${date}T$hour:${match[2]}:00'
-        '${formatUtcOffset(widget.api.driverOffset)}';
+    final time = formatClockInput(clock);
+    if (time == null) return null;
+    return '${date}T$time:00${formatUtcOffset(widget.api.driverOffset)}';
   }
 
   Map<String, Object?> _toJson() => {
@@ -81,6 +79,14 @@ class _AddTripScreenState extends State<AddTripScreen> {
           if (!keys.contains(entry.key)) entry.key: entry.value,
       },
     );
+  }
+
+  /// Shows a valid time as `HH:MM` once the driver leaves the field.
+  void _normalizeClock(TextEditingController controller) {
+    final normalized = formatClockInput(controller.text);
+    if (normalized != null && normalized != controller.text) {
+      controller.text = normalized;
+    }
   }
 
   Future<void> _submit() async {
@@ -140,18 +146,24 @@ class _AddTripScreenState extends State<AddTripScreen> {
     String label,
     String? error,
     List<String> clears,
-  ) => TextField(
-    key: key,
-    controller: controller,
-    enabled: !_saving,
-    keyboardType: TextInputType.datetime,
-    onChanged: (_) => _clearErrors(clears),
-    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9:]'))],
-    decoration: InputDecoration(
-      labelText: label,
-      hintText: 'ЧЧ:ММ',
-      errorText: error,
-      errorMaxLines: 2,
+  ) => Focus(
+    skipTraversal: true,
+    onFocusChange: (hasFocus) {
+      if (!hasFocus) _normalizeClock(controller);
+    },
+    child: TextField(
+      key: key,
+      controller: controller,
+      enabled: !_saving,
+      keyboardType: TextInputType.number,
+      onChanged: (_) => _clearErrors(clears),
+      inputFormatters: const [ClockInputFormatter()],
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: 'ЧЧ:ММ',
+        errorText: error,
+        errorMaxLines: 2,
+      ),
     ),
   );
 

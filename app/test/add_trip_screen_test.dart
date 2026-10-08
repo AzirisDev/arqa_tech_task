@@ -213,4 +213,50 @@ void main() {
 
     expect(find.text('Комиссия не может превышать сумму'), findsOneWidget);
   });
+
+  testWidgets('time typed as digits gets a colon', (tester) async {
+    await openForm(tester, FakeApiClient());
+
+    await tester.enterText(find.byKey(const Key('start-time')), '1023');
+    await tester.pump();
+
+    expect(find.text('10:23'), findsOneWidget);
+  });
+
+  testWidgets('hour-only times are saved as full times', (tester) async {
+    final api = FakeApiClient();
+    await openForm(tester, api);
+
+    await fill(tester, start: '20', end: '2130');
+    await submit(tester);
+
+    final saved = api.savedTrips.single;
+    expect(saved.start, DateTime.parse('2026-10-01T20:00:00+05:00'));
+    expect(saved.end, DateTime.parse('2026-10-01T21:30:00+05:00'));
+  });
+
+  testWidgets('three digits mean H:MM', (tester) async {
+    final api = FakeApiClient();
+    await openForm(tester, api);
+
+    await fill(tester, start: '930', end: '1000');
+    await submit(tester);
+
+    final saved = api.savedTrips.single;
+    expect(saved.start, DateTime.parse('2026-10-01T09:30:00+05:00'));
+    expect(saved.end, DateTime.parse('2026-10-01T10:00:00+05:00'));
+  });
+
+  testWidgets('leaving a time field shows the normalised time', (tester) async {
+    await openForm(tester, FakeApiClient());
+
+    await tester.enterText(find.byKey(const Key('start-time')), '930');
+    await tester.pump();
+    expect(find.text('9:30'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('end-time')));
+    await tester.pump();
+
+    expect(find.text('09:30'), findsOneWidget);
+  });
 }
