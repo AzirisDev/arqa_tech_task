@@ -53,6 +53,10 @@ class TripCard extends StatelessWidget {
   }
 }
 
+/// Opacity of the payment chip background tint; low enough that the chip
+/// text keeps WCAG AA contrast on it in both palettes.
+const paymentChipTint = 0.10;
+
 /// «Наличные» (orange) or «Карта» (blue) pill.
 class PaymentChip extends StatelessWidget {
   const PaymentChip({super.key, required this.payment});
@@ -66,7 +70,7 @@ class PaymentChip extends StatelessWidget {
     final color = isCash ? colors.cash : colors.card;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.18),
+        color: color.withValues(alpha: paymentChipTint),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Padding(
