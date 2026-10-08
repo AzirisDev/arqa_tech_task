@@ -6,6 +6,7 @@ import 'package:trip_core/trip_core.dart';
 
 import 'src/api/api_client.dart';
 import 'src/day/day_screen.dart';
+import 'src/theme/app_theme.dart';
 
 const _apiUrl = String.fromEnvironment('API_URL');
 const _driverOffset = String.fromEnvironment(
@@ -39,7 +40,9 @@ class ShiftDiaryApp extends StatelessWidget {
     return MaterialApp(
       title: 'Дневник смен',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(colorSchemeSeed: Colors.teal),
+      theme: buildAppTheme(Brightness.light),
+      darkTheme: buildAppTheme(Brightness.dark),
+      themeMode: ThemeMode.system,
       locale: const Locale('ru'),
       supportedLocales: const [Locale('ru')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,

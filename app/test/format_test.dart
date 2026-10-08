@@ -39,4 +39,41 @@ void main() {
     );
     expect(formatTripTime(late, plus5), '23:40–00:15 (+1) · 35 мин');
   });
+
+  test('formatDayLong: day, short month, year, weekday', () {
+    expect(formatDayLong(const LocalDate(2026, 10, 1)), '1 окт. 2026, Чт');
+    expect(formatDayLong(const LocalDate(2026, 9, 30)), '30 сент. 2026, Ср');
+    expect(formatDayLong(const LocalDate(2026, 5, 4)), '4 мая 2026, Пн');
+  });
+
+  test('formatTripCount uses Russian plural forms', () {
+    const cases = {
+      0: '0 поездок',
+      1: '1 поездка',
+      2: '2 поездки',
+      4: '4 поездки',
+      5: '5 поездок',
+      11: '11 поездок',
+      12: '12 поездок',
+      14: '14 поездок',
+      21: '21 поездка',
+      22: '22 поездки',
+      25: '25 поездок',
+      111: '111 поездок',
+    };
+    cases.forEach((count, expected) {
+      expect(formatTripCount(count), expected, reason: '$count');
+    });
+  });
+
+  test('formatDeduction prefixes a minus sign', () {
+    expect(formatDeduction(585), '−585 ₸');
+  });
+
+  test('groupThousands', () {
+    expect(groupThousands(''), '');
+    expect(groupThousands('999'), '999');
+    expect(groupThousands('2400'), '2 400');
+    expect(groupThousands('1234567'), '1 234 567');
+  });
 }

@@ -15,22 +15,60 @@ const _months = [
   'ноя',
   'дек',
 ];
+const _weekdaysTitle = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+const _monthsShort = [
+  'янв.',
+  'февр.',
+  'мар.',
+  'апр.',
+  'мая',
+  'июн.',
+  'июл.',
+  'авг.',
+  'сент.',
+  'окт.',
+  'нояб.',
+  'дек.',
+];
 const _nbsp = ' ';
 
-/// `2 400 ₸` with non-breaking spaces, so an amount never wraps.
-String formatMoney(int amount) {
-  final digits = amount.abs().toString();
-  final buffer = StringBuffer(amount < 0 ? '-' : '');
+/// Groups digits by thousands with non-breaking spaces: `2 400`.
+String groupThousands(String digits) {
+  final buffer = StringBuffer();
   for (var i = 0; i < digits.length; i++) {
     if (i > 0 && (digits.length - i) % 3 == 0) buffer.write(_nbsp);
     buffer.write(digits[i]);
   }
-  return '$buffer$_nbsp₸';
+  return buffer.toString();
 }
+
+/// `2 400 ₸` with non-breaking spaces, so an amount never wraps.
+String formatMoney(int amount) =>
+    '${amount < 0 ? '-' : ''}${groupThousands(amount.abs().toString())}$_nbsp₸';
+
+/// `−585 ₸` — an amount taken away, such as commission.
+String formatDeduction(int amount) => '−${formatMoney(amount)}';
 
 /// `чт, 1 окт`
 String formatDay(LocalDate date) =>
     '${_weekdays[date.weekday - 1]}, ${date.day} ${_months[date.month - 1]}';
+
+/// `1 окт. 2026, Чт`
+String formatDayLong(LocalDate date) =>
+    '${date.day} ${_monthsShort[date.month - 1]} ${date.year}, '
+    '${_weekdaysTitle[date.weekday - 1]}';
+
+/// `1 поездка`, `2 поездки`, `5 поездок`.
+String formatTripCount(int count) {
+  final lastTwo = count % 100;
+  final last = count % 10;
+  final word = last == 1 && lastTwo != 11
+      ? 'поездка'
+      : last >= 2 && last <= 4 && (lastTwo < 12 || lastTwo > 14)
+      ? 'поездки'
+      : 'поездок';
+  return '$count $word';
+}
 
 /// `08:10` in driver time.
 String formatClock(DateTime instant, Duration offset) {
