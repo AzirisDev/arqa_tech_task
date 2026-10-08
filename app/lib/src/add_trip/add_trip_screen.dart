@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:trip_core/trip_core.dart';
 import 'package:uuid/uuid.dart';
 
 import '../api/api_client.dart';
 import '../format.dart';
+import '../theme/app_theme.dart';
 import 'clock_input.dart';
+import 'money_input.dart';
 
 class AddTripScreen extends StatefulWidget {
   const AddTripScreen({
@@ -65,8 +66,8 @@ class _AddTripScreenState extends State<AddTripScreen> {
     'id': _tripId,
     'start': _timestamp(_date, _startTime.text),
     'end': _timestamp(_endsNextDay ? _date.addDays(1) : _date, _endTime.text),
-    'amount': int.tryParse(_amount.text.trim()),
-    'commission': int.tryParse(_commission.text.trim()),
+    'amount': parseMoneyInput(_amount.text),
+    'commission': parseMoneyInput(_commission.text),
     'payment': _payment?.name,
   };
 
@@ -87,6 +88,13 @@ class _AddTripScreenState extends State<AddTripScreen> {
     if (normalized != null && normalized != controller.text) {
       controller.text = normalized;
     }
+  }
+
+  void _unfocus() => FocusManager.instance.primaryFocus?.unfocus();
+
+  void _selectPayment(PaymentMethod payment) {
+    setState(() => _payment = payment);
+    _clearErrors(['payment']);
   }
 
   Future<void> _submit() async {
@@ -143,7 +151,6 @@ class _AddTripScreenState extends State<AddTripScreen> {
   Widget _clockField(
     Key key,
     TextEditingController controller,
-    String label,
     String? error,
     List<String> clears,
   ) => Focus(
@@ -157,11 +164,11 @@ class _AddTripScreenState extends State<AddTripScreen> {
       enabled: !_saving,
       keyboardType: TextInputType.number,
       onChanged: (_) => _clearErrors(clears),
-      onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+      onTapOutside: (_) => _unfocus(),
       inputFormatters: const [ClockInputFormatter()],
       decoration: InputDecoration(
-        labelText: label,
         hintText: 'ЧЧ:ММ',
+        prefixIcon: const Icon(Icons.schedule),
         errorText: error,
         errorMaxLines: 2,
       ),
@@ -171,23 +178,29 @@ class _AddTripScreenState extends State<AddTripScreen> {
   Widget _moneyField(
     Key key,
     TextEditingController controller,
-    String label,
     String? error,
-    List<String> clears,
-  ) => TextField(
+    List<String> clears, {
+    TextStyle? style,
+  }) => TextField(
     key: key,
     controller: controller,
     enabled: !_saving,
     keyboardType: TextInputType.number,
+    style: style,
     onChanged: (_) => _clearErrors(clears),
-    onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-    decoration: InputDecoration(labelText: label, errorText: error),
+    onTapOutside: (_) => _unfocus(),
+    inputFormatters: const [MoneyInputFormatter()],
+    decoration: InputDecoration(
+      hintText: '0',
+      errorText: error,
+      errorMaxLines: 2,
+    ),
   );
 
   @override
   Widget build(BuildContext context) {
-    final errorStyle = TextStyle(color: Theme.of(context).colorScheme.error);
+    final theme = Theme.of(context);
+    final errorStyle = TextStyle(color: theme.colorScheme.error);
     // Errors without a form field (e.g. `id` or `_` from the server).
     final banner = [
       ?_failure,
@@ -198,101 +211,90 @@ class _AddTripScreenState extends State<AddTripScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Новая поездка')),
       body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-        padding: const EdgeInsets.all(16),
         children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: OutlinedButton.icon(
-              key: const Key('date'),
-              onPressed: _saving ? null : _pickDate,
-              icon: const Icon(Icons.calendar_today, size: 18),
-              label: Text(formatDay(_date)),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const _FieldLabel('Сумма (₸)'),
+                  _moneyField(
+                    const Key('amount'),
+                    _amount,
+                    _errors['amount'],
+                    ['amount', 'commission'],
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const _FieldLabel('Способ оплаты'),
+                  _PaymentToggle(
+                    selected: _payment,
+                    onSelected: _saving ? null : _selectPayment,
+                  ),
+                  if (_errors['payment'] case final error?)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                      child: Text(error, style: errorStyle),
+                    ),
+                  const SizedBox(height: 20),
+                  const _FieldLabel('Дата'),
+                  InkWell(
+                    key: const Key('date'),
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: _saving ? null : _pickDate,
+                    child: InputDecorator(
+                      decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.calendar_today_outlined),
+                      ),
+                      child: Text(
+                        formatDayLong(_date),
+                        style: theme.textTheme.bodyLarge,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const _FieldLabel('Время начала'),
+                  _clockField(
+                    const Key('start-time'),
+                    _startTime,
+                    _errors['start'],
+                    ['start', 'end'],
+                  ),
+                  const SizedBox(height: 16),
+                  const _FieldLabel('Время окончания'),
+                  _clockField(const Key('end-time'), _endTime, _errors['end'], [
+                    'end',
+                  ]),
+                  SwitchListTile(
+                    key: const Key('ends-next-day'),
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Закончилась на следующий день'),
+                    value: _endsNextDay,
+                    onChanged: _saving
+                        ? null
+                        : (value) {
+                            setState(() => _endsNextDay = value);
+                            _clearErrors(['end']);
+                          },
+                  ),
+                  const SizedBox(height: 4),
+                  const _FieldLabel('Комиссия (₸)'),
+                  _moneyField(
+                    const Key('commission'),
+                    _commission,
+                    _errors['commission'],
+                    ['commission'],
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: _clockField(
-                  const Key('start-time'),
-                  _startTime,
-                  'Начало',
-                  _errors['start'],
-                  ['start', 'end'],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _clockField(
-                  const Key('end-time'),
-                  _endTime,
-                  'Окончание',
-                  _errors['end'],
-                  ['end'],
-                ),
-              ),
-            ],
-          ),
-          SwitchListTile(
-            key: const Key('ends-next-day'),
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Закончилась на следующий день'),
-            value: _endsNextDay,
-            onChanged: _saving
-                ? null
-                : (value) {
-                    setState(() => _endsNextDay = value);
-                    _clearErrors(['end']);
-                  },
-          ),
-          _moneyField(
-            const Key('amount'),
-            _amount,
-            'Сумма, ₸',
-            _errors['amount'],
-            ['amount', 'commission'],
-          ),
-          const SizedBox(height: 12),
-          _moneyField(
-            const Key('commission'),
-            _commission,
-            'Комиссия, ₸',
-            _errors['commission'],
-            ['commission'],
-          ),
-          const SizedBox(height: 16),
-          SegmentedButton<PaymentMethod>(
-            segments: const [
-              ButtonSegment(
-                value: PaymentMethod.cash,
-                label: Text('Наличные'),
-                icon: Icon(Icons.payments_outlined),
-              ),
-              ButtonSegment(
-                value: PaymentMethod.card,
-                label: Text('Карта'),
-                icon: Icon(Icons.credit_card),
-              ),
-            ],
-            selected: {?_payment},
-            emptySelectionAllowed: true,
-            onSelectionChanged: _saving
-                ? null
-                : (selection) {
-                    setState(
-                      () =>
-                          _payment = selection.isEmpty ? null : selection.first,
-                    );
-                    _clearErrors(['payment']);
-                  },
-          ),
-          if (_errors['payment'] case final error?)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(error, style: errorStyle),
-            ),
         ],
       ),
       bottomNavigationBar: SafeArea(
@@ -321,13 +323,126 @@ class _AddTripScreenState extends State<AddTripScreen> {
                       )
                     : Text(
                         _conflict
-                            ? 'Закрыть'
+                            ? 'ЗАКРЫТЬ'
                             : _failure == null
-                            ? 'Сохранить'
-                            : 'Повторить',
+                            ? 'СОХРАНИТЬ ПОЕЗДКУ'
+                            : 'ПОВТОРИТЬ',
                       ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FieldLabel extends StatelessWidget {
+  const _FieldLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        text,
+        style: Theme.of(
+          context,
+        ).textTheme.labelLarge?.copyWith(color: AppColors.of(context).muted),
+      ),
+    );
+  }
+}
+
+/// Pill toggle «Карта» / «Наличные»; nothing is selected until the driver
+/// picks one.
+class _PaymentToggle extends StatelessWidget {
+  const _PaymentToggle({required this.selected, required this.onSelected});
+
+  final PaymentMethod? selected;
+  final ValueChanged<PaymentMethod>? onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final select = onSelected;
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: colors.inputFill,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
+      ),
+      child: Row(
+        children: [
+          _PaymentOption(
+            label: 'Карта',
+            icon: Icons.credit_card,
+            color: colors.card,
+            selected: selected == PaymentMethod.card,
+            onTap: select == null ? null : () => select(PaymentMethod.card),
+          ),
+          _PaymentOption(
+            label: 'Наличные',
+            icon: Icons.payments_outlined,
+            color: colors.cash,
+            selected: selected == PaymentMethod.cash,
+            onTap: select == null ? null : () => select(PaymentMethod.cash),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PaymentOption extends StatelessWidget {
+  const _PaymentOption({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color color;
+  final bool selected;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final foreground = selected ? colors.onAccent : colors.muted;
+    return Expanded(
+      child: Semantics(
+        button: true,
+        selected: selected,
+        child: Material(
+          color: selected ? color : Colors.transparent,
+          shape: const StadiumBorder(),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: 18, color: foreground),
+                  const SizedBox(width: 8),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: foreground,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

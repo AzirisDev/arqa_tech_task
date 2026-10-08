@@ -172,7 +172,7 @@ void main() {
     await submit(tester);
 
     expect(find.text(const NetworkFailure().message), findsOneWidget);
-    expect(find.text('Повторить'), findsOneWidget);
+    expect(find.text('ПОВТОРИТЬ'), findsOneWidget);
 
     await submit(tester);
 
@@ -191,7 +191,7 @@ void main() {
     await submit(tester);
 
     expect(find.text(const ConflictFailure().message), findsOneWidget);
-    expect(find.text('Закрыть'), findsOneWidget);
+    expect(find.text('ЗАКРЫТЬ'), findsOneWidget);
 
     await submit(tester);
 
@@ -254,6 +254,7 @@ void main() {
     await tester.pump();
     expect(find.text('9:30'), findsOneWidget);
 
+    await tester.ensureVisible(find.byKey(const Key('end-time')));
     await tester.tap(find.byKey(const Key('end-time')));
     await tester.pump();
 
@@ -286,5 +287,24 @@ void main() {
     await tester.pump();
 
     expect(find.text('24:60'), findsOneWidget);
+  });
+
+  testWidgets('amount input groups thousands and saves the number', (
+    tester,
+  ) async {
+    final api = FakeApiClient();
+    await openForm(tester, api);
+
+    await fill(tester, amount: '12000', commission: '1800');
+    expect(find.text('12 000'), findsOneWidget);
+    await submit(tester);
+
+    expect(api.savedTrips.single.amount, 12000);
+    expect(api.savedTrips.single.commission, 1800);
+  });
+
+  testWidgets('submit button uses the mock wording', (tester) async {
+    await openForm(tester, FakeApiClient());
+    expect(find.text('СОХРАНИТЬ ПОЕЗДКУ'), findsOneWidget);
   });
 }

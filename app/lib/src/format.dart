@@ -1,20 +1,5 @@
 import 'package:trip_core/trip_core.dart';
 
-const _weekdays = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'];
-const _months = [
-  'янв',
-  'фев',
-  'мар',
-  'апр',
-  'мая',
-  'июн',
-  'июл',
-  'авг',
-  'сен',
-  'окт',
-  'ноя',
-  'дек',
-];
 const _weekdaysTitle = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 const _monthsShort = [
   'янв.',
@@ -48,10 +33,6 @@ String formatMoney(int amount) =>
 
 /// `−585 ₸` — an amount taken away, such as commission.
 String formatDeduction(int amount) => '−${formatMoney(amount)}';
-
-/// `чт, 1 окт`
-String formatDay(LocalDate date) =>
-    '${_weekdays[date.weekday - 1]}, ${date.day} ${_months[date.month - 1]}';
 
 /// `1 окт. 2026, Чт`
 String formatDayLong(LocalDate date) =>
