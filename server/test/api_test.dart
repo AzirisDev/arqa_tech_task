@@ -58,6 +58,18 @@ void main() {
       expect(repo.findById('t1')!.amount, 2400);
     });
 
+    test('re-sending the echoed trip (fractional start) is a 200 replay',
+        () async {
+      final (status, echoed) = await call('POST', '/api/trips', {
+        ...t1,
+        'start': '2026-10-01T08:10:00.250+05:00',
+      });
+      expect(status, 201);
+      final (replayStatus, _) = await call('POST', '/api/trips', echoed);
+      expect(replayStatus, 200);
+      expect(repo.count(), 1);
+    });
+
     test('20 parallel identical requests store exactly one trip', () async {
       final results = await Future.wait(
           List.generate(20, (_) => call('POST', '/api/trips', t1)));

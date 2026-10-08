@@ -30,6 +30,8 @@ Future<void> main() async {
     } on FormatException catch (error) {
       stderr.writeln('Seed file $seedPath ignored: ${error.message}');
     }
+  } else {
+    stderr.writeln('No seed file at $seedPath; starting with existing data');
   }
 
   final handler = const Pipeline()
