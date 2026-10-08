@@ -22,18 +22,17 @@ Out of scope: CI, Docker, overlap detection between trips, editing/deleting trip
 ## 2. Stack
 
 - Backend: Dart, `shelf` + `shelf_router`, SQLite via `sqlite3` package.
-- Client: Flutter (iOS + Android), `http`, `intl`, `uuid`. State via plain `ChangeNotifier` — no state-management library.
+- Client: Flutter (iOS + Android), `http`, `uuid`, `flutter_localizations` (Russian Material widgets). State via plain `ChangeNotifier` — no state-management library. Money/date formatting is hand-rolled (tiny, deterministic in tests) instead of `intl`.
 - Shared: pure-Dart package `trip_core` used by both server and app.
 - Tests: `package:test` (core, server), `flutter_test` (app).
 - Toolchain on dev machine: Flutter 3.47.2 (via fvm), Dart SDK bundled.
 
 ## 3. Repository layout
 
-Dart pub workspace at repo root:
+Three independent Dart packages; `server` and `app` depend on `trip_core` via `path:` dependency. (Not a pub workspace: a workspace containing a Flutter package must be resolved with `flutter pub get`, which would make the server require the Flutter SDK.)
 
 ```
 arqa_tech_task/
-  pubspec.yaml                 # workspace root: packages/trip_core, server, app
   packages/trip_core/
     lib/trip_core.dart
     lib/src/trip.dart          # Trip, PaymentMethod
@@ -164,11 +163,11 @@ Config (env vars): `PORT` (8080), `DB_PATH`, `SEED_PATH`, `DRIVER_UTC_OFFSET` (`
 
 ## 7. Flutter app
 
-UI language: Russian. Currency: ₸, formatted with `intl` (`2 400 ₸`).
+UI language: Russian. Currency: ₸, formatted as `2 400 ₸` (non-breaking space as thousands separator). Driver offset in the app comes from `--dart-define=DRIVER_UTC_OFFSET` (default `+05:00`), same default as the server.
 
 ### 7.1 Day screen
 
-- AppBar: `‹  ср, 1 окт  ›`. Arrows step ±1 calendar day; tapping the title opens `showDatePicker`.
+- AppBar: `‹  чт, 1 окт  ›`. Arrows step ±1 calendar day; tapping the title opens `showDatePicker`.
 - Initial day: last entry of `GET /api/days`; if empty or request fails → today.
 - Summary card: headline «На руки» (net); row: «Поездки», «Выручка», «Комиссия»; cash vs card split («Наличные», «Карта») each with count and revenue.
 - Trip list rows: `08:10–08:32 · 22 мин`, amount, payment icon, commission in secondary text.
@@ -178,7 +177,7 @@ UI language: Russian. Currency: ₸, formatted with `intl` (`2 400 ₸`).
 
 ### 7.2 Add-trip screen
 
-- Fields: start date + time, end date + time (end date defaults to start date, editable for trips past midnight), amount, commission, payment (`SegmentedButton`: Наличные / Карта).
+- Fields: date (date picker, defaults to the selected day), start time and end time as `ЧЧ:ММ` text fields, switch «Закончилась на следующий день» (end date = date + 1, for trips past midnight), amount, commission, payment (`SegmentedButton`: Наличные / Карта, no default — must be chosen).
 - On submit: run `trip_core.validateTrip` locally → show inline errors. Server `400` errors are mapped onto the same fields.
 - Trip `id` = UUID v4 generated once in `initState`, reused for every submit attempt from this screen.
 - Network failure → message + «Повторить» → resend with same `id`. `201` and `200` both mean success.
