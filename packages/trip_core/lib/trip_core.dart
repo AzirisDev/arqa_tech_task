@@ -2,5 +2,6 @@
 library;
 
 export 'src/local_date.dart';
+export 'src/summary.dart';
 export 'src/trip.dart';
 export 'src/validation.dart';
