@@ -86,6 +86,34 @@ void main() {
     expect(api.savedTrips, isEmpty);
   });
 
+  testWidgets('editing a field clears its error', (tester) async {
+    final api = FakeApiClient();
+    await openForm(tester, api);
+
+    await submit(tester);
+    expect(find.text('Сумма должна быть целым числом'), findsOneWidget);
+
+    await tester.enterText(find.byKey(const Key('amount')), '1000');
+    await tester.pump();
+
+    expect(find.text('Сумма должна быть целым числом'), findsNothing);
+    expect(find.text('Некорректное время начала'), findsOneWidget);
+  });
+
+  testWidgets('changing start clears the end-order error', (tester) async {
+    final api = FakeApiClient();
+    await openForm(tester, api);
+
+    await fill(tester, start: '09:00', end: '08:00');
+    await submit(tester);
+    expect(find.text('Окончание должно быть позже начала'), findsOneWidget);
+
+    await tester.enterText(find.byKey(const Key('start-time')), '07:00');
+    await tester.pump();
+
+    expect(find.text('Окончание должно быть позже начала'), findsNothing);
+  });
+
   testWidgets('valid trip is saved in driver offset and returned',
       (tester) async {
     final api = FakeApiClient();

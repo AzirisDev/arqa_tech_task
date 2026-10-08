@@ -77,6 +77,15 @@ class _AddTripScreenState extends State<AddTripScreen> {
         'payment': _payment?.name,
       };
 
+  /// Drops the errors an edit may have made stale; they are re-checked on submit.
+  void _clearErrors(List<String> keys) {
+    if (!keys.any(_errors.containsKey)) return;
+    setState(() => _errors = {
+          for (final entry in _errors.entries)
+            if (!keys.contains(entry.key)) entry.key: entry.value,
+        });
+  }
+
   Future<void> _submit() async {
     switch (validateTrip(_toJson())) {
       case InvalidTrip(:final errors):
@@ -116,16 +125,18 @@ class _AddTripScreenState extends State<AddTripScreen> {
     );
     if (picked != null && mounted) {
       setState(() => _date = LocalDate(picked.year, picked.month, picked.day));
+      _clearErrors(['start', 'end']);
     }
   }
 
   Widget _clockField(Key key, TextEditingController controller, String label,
-          String? error) =>
+          String? error, List<String> clears) =>
       TextField(
         key: key,
         controller: controller,
         enabled: !_saving,
         keyboardType: TextInputType.datetime,
+        onChanged: (_) => _clearErrors(clears),
         inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9:]'))],
         decoration: InputDecoration(
           labelText: label,
@@ -136,12 +147,13 @@ class _AddTripScreenState extends State<AddTripScreen> {
       );
 
   Widget _moneyField(Key key, TextEditingController controller, String label,
-          String? error) =>
+          String? error, List<String> clears) =>
       TextField(
         key: key,
         controller: controller,
         enabled: !_saving,
         keyboardType: TextInputType.number,
+        onChanged: (_) => _clearErrors(clears),
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         decoration: InputDecoration(labelText: label, errorText: error),
       );
@@ -176,12 +188,12 @@ class _AddTripScreenState extends State<AddTripScreen> {
             children: [
               Expanded(
                 child: _clockField(const Key('start-time'), _startTime,
-                    'Начало', _errors['start']),
+                    'Начало', _errors['start'], ['start', 'end']),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _clockField(const Key('end-time'), _endTime,
-                    'Окончание', _errors['end']),
+                    'Окончание', _errors['end'], ['end']),
               ),
             ],
           ),
@@ -190,14 +202,19 @@ class _AddTripScreenState extends State<AddTripScreen> {
             contentPadding: EdgeInsets.zero,
             title: const Text('Закончилась на следующий день'),
             value: _endsNextDay,
-            onChanged:
-                _saving ? null : (value) => setState(() => _endsNextDay = value),
+            onChanged: _saving
+                ? null
+                : (value) {
+                    setState(() => _endsNextDay = value);
+                    _clearErrors(['end']);
+                  },
           ),
           _moneyField(
-              const Key('amount'), _amount, 'Сумма, ₸', _errors['amount']),
+              const Key('amount'), _amount, 'Сумма, ₸', _errors['amount'],
+              ['amount', 'commission']),
           const SizedBox(height: 12),
           _moneyField(const Key('commission'), _commission, 'Комиссия, ₸',
-              _errors['commission']),
+              _errors['commission'], ['commission']),
           const SizedBox(height: 16),
           SegmentedButton<PaymentMethod>(
             segments: const [
@@ -216,8 +233,11 @@ class _AddTripScreenState extends State<AddTripScreen> {
             emptySelectionAllowed: true,
             onSelectionChanged: _saving
                 ? null
-                : (selection) => setState(() =>
-                    _payment = selection.isEmpty ? null : selection.first),
+                : (selection) {
+                    setState(() =>
+                        _payment = selection.isEmpty ? null : selection.first);
+                    _clearErrors(['payment']);
+                  },
           ),
           if (_errors['payment'] case final error?)
             Padding(
