@@ -1,0 +1,6 @@
+.dart_tool/
+build/
+.idea/
+*.iml
+.DS_Store
+server/data/trips.db
