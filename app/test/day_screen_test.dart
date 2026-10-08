@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shift_diary/src/api/api_client.dart';
 import 'package:shift_diary/src/day/day_screen.dart';
 import 'package:shift_diary/src/format.dart';
+import 'package:shift_diary/src/theme/app_theme.dart';
 import 'package:trip_core/trip_core.dart';
 
 import 'fakes.dart';
@@ -13,6 +14,7 @@ const today = LocalDate(2026, 10, 8);
 Future<void> pumpDay(WidgetTester tester, FakeApiClient api) async {
   await tester.pumpWidget(
     MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
       home: DayScreen(api: api, today: () => today),
     ),
   );

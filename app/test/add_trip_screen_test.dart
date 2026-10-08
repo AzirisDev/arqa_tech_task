@@ -3,6 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shift_diary/src/add_trip/add_trip_screen.dart';
 import 'package:shift_diary/src/api/api_client.dart';
+import 'package:shift_diary/src/theme/app_theme.dart';
 import 'package:trip_core/trip_core.dart';
 
 import 'fakes.dart';
@@ -15,6 +16,7 @@ Future<List<Trip?>> openForm(WidgetTester tester, FakeApiClient api) async {
   final results = <Trip?>[];
   await tester.pumpWidget(
     MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
       home: Builder(
         builder: (context) => Scaffold(
           body: Center(
