@@ -201,6 +201,9 @@ class _AddTripScreenState extends State<AddTripScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final errorStyle = TextStyle(color: theme.colorScheme.error);
+    final fieldErrorStyle = theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.error,
+    );
     // Errors without a form field (e.g. `id` or `_` from the server).
     final banner = [
       ?_failure,
@@ -240,7 +243,7 @@ class _AddTripScreenState extends State<AddTripScreen> {
                   if (_errors['payment'] case final error?)
                     Padding(
                       padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-                      child: Text(error, style: errorStyle),
+                      child: Text(error, style: fieldErrorStyle),
                     ),
                   const SizedBox(height: 20),
                   const _FieldLabel('Дата'),

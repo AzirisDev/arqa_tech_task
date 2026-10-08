@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shift_diary/src/add_trip/add_trip_screen.dart';
 import 'package:shift_diary/src/api/api_client.dart';
@@ -80,6 +81,21 @@ void main() {
       findsOneWidget,
     );
     expect(api.savedTrips, isEmpty);
+  });
+
+  testWidgets('payment error is as small as the field errors', (tester) async {
+    await openForm(tester, FakeApiClient());
+    await submit(tester);
+
+    double sizeOf(String text) => tester
+        .renderObject<RenderParagraph>(find.text(text))
+        .text
+        .style!
+        .fontSize!;
+    expect(
+      sizeOf('Выберите способ оплаты: наличные или карта'),
+      sizeOf('Некорректное время начала'),
+    );
   });
 
   testWidgets('end before start is rejected locally', (tester) async {
