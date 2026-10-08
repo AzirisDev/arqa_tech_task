@@ -19,12 +19,16 @@ Future<void> main() async {
 
   final seedFile = File(seedPath);
   if (seedFile.existsSync()) {
-    final report = seedIfEmpty(repo, seedFile.readAsStringSync());
-    if (report != null) {
-      stdout.writeln('Seeded ${report.imported} trips from $seedPath');
-      for (final reason in report.skipped) {
-        stderr.writeln('  skipped $reason');
+    try {
+      final report = seedIfEmpty(repo, seedFile.readAsStringSync());
+      if (report != null) {
+        stdout.writeln('Seeded ${report.imported} trips from $seedPath');
+        for (final reason in report.skipped) {
+          stderr.writeln('  skipped $reason');
+        }
       }
+    } on FormatException catch (error) {
+      stderr.writeln('Seed file $seedPath ignored: ${error.message}');
     }
   }
 
