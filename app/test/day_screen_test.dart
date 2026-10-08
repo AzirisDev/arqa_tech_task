@@ -29,15 +29,17 @@ void main() {
     );
     await pumpDay(tester, api);
 
-    expect(find.text('чт, 1 окт'), findsOneWidget);
-    expect(find.text('На руки'), findsOneWidget);
+    expect(find.text('1 окт. 2026, Чт'), findsOneWidget);
+    expect(find.text('НА РУКИ'), findsOneWidget);
+    expect(find.text('2 поездки'), findsOneWidget);
     expect(find.text(formatMoney(3315)), findsOneWidget); // net
-    expect(find.text(formatMoney(3900)), findsOneWidget); // revenue
-    expect(find.text(formatMoney(585)), findsOneWidget); // commission
-    expect(find.text('1 · ${formatMoney(1500)}'), findsOneWidget); // cash
-    expect(find.text('1 · ${formatMoney(2400)}'), findsOneWidget); // card
+    expect(find.text('Выручка: ${formatMoney(3900)}'), findsOneWidget);
+    expect(find.text('Комиссия: ${formatDeduction(585)}'), findsOneWidget);
+    expect(find.text('Наличные: ${formatMoney(1500)}'), findsOneWidget);
+    expect(find.text('Карта: ${formatMoney(2400)}'), findsOneWidget);
     expect(find.text('08:10–08:32 · 22 мин'), findsOneWidget);
     expect(find.text('09:05–09:20 · 15 мин'), findsOneWidget);
+    expect(find.text('Комиссия: ${formatDeduction(360)}'), findsOneWidget);
   });
 
   testWidgets('arrows switch days and refetch', (tester) async {
@@ -49,14 +51,14 @@ void main() {
 
     await tester.tap(find.byKey(const Key('next-day')));
     await tester.pumpAndSettle();
-    expect(find.text('пт, 2 окт'), findsOneWidget);
+    expect(find.text('2 окт. 2026, Пт'), findsOneWidget);
     expect(find.text('Нет поездок за этот день'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('prev-day')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('prev-day')));
     await tester.pumpAndSettle();
-    expect(find.text('ср, 30 сен'), findsOneWidget);
+    expect(find.text('30 сент. 2026, Ср'), findsOneWidget);
     expect(api.fetchedDates, [
       oct1,
       const LocalDate(2026, 10, 2),
@@ -89,7 +91,7 @@ void main() {
     };
     await pumpDay(tester, api); // no trips anywhere → opens today
 
-    expect(find.text('чт, 8 окт'), findsOneWidget);
+    expect(find.text('8 окт. 2026, Чт'), findsOneWidget);
     await tester.tap(find.byKey(const Key('add-trip')));
     await tester.pumpAndSettle();
 
@@ -133,6 +135,29 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(api.fetchedDates.sublist(api.fetchedDates.length - 2), [oct1, oct1]);
-    expect(find.text('На руки'), findsOneWidget);
+    expect(find.text('НА РУКИ'), findsOneWidget);
+  });
+
+  testWidgets('split bar sizes cash and card by revenue', (tester) async {
+    final api = FakeApiClient(
+      days: [oct1],
+      dayData: {oct1: dayOf(oct1, sampleTrips())},
+    );
+    await pumpDay(tester, api);
+
+    final cash = tester.getSize(find.byKey(const Key('split-cash'))).width;
+    final card = tester.getSize(find.byKey(const Key('split-card'))).width;
+    expect(cash, greaterThan(0));
+    expect(cash, lessThan(card)); // 1 500 ₸ cash vs 2 400 ₸ card
+  });
+
+  testWidgets('empty day shows a hint and no split segments', (tester) async {
+    await pumpDay(tester, FakeApiClient()); // opens today, no trips
+
+    expect(find.text('Нет поездок за этот день'), findsOneWidget);
+    expect(find.text('Нажмите +, чтобы добавить'), findsOneWidget);
+    expect(find.text('0 поездок'), findsOneWidget);
+    expect(find.byKey(const Key('split-cash')), findsNothing);
+    expect(find.byKey(const Key('split-card')), findsNothing);
   });
 }

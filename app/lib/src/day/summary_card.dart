@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:trip_core/trip_core.dart';
 
 import '../format.dart';
+import '../theme/app_theme.dart';
 
 class SummaryCard extends StatelessWidget {
   const SummaryCard({super.key, required this.summary});
@@ -11,55 +12,65 @@ class SummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = AppColors.of(context);
+    final muted = theme.textTheme.bodyMedium?.copyWith(color: colors.muted);
+    final legend = theme.textTheme.bodySmall?.copyWith(
+      fontWeight: FontWeight.w600,
+    );
+
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('На руки', style: theme.textTheme.labelLarge),
-            Text(
-              formatMoney(summary.net),
-              style: theme.textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
-                  child: _Stat(label: 'Поездки', value: '${summary.tripCount}'),
-                ),
-                Expanded(
-                  child: _Stat(
-                    label: 'Выручка',
-                    value: formatMoney(summary.revenue),
+                  child: Text(
+                    'НА РУКИ',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: colors.muted,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.2,
+                    ),
                   ),
                 ),
-                Expanded(
-                  child: _Stat(
-                    label: 'Комиссия',
-                    value: formatMoney(summary.commission),
-                  ),
-                ),
+                Text(formatTripCount(summary.tripCount), style: muted),
               ],
             ),
-            const Divider(height: 24),
+            const SizedBox(height: 6),
+            Text(
+              formatMoney(summary.net),
+              style: theme.textTheme.displaySmall?.copyWith(
+                color: colors.net,
+                fontWeight: FontWeight.w800,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text('Выручка: ${formatMoney(summary.revenue)}', style: muted),
+            Text(
+              'Комиссия: ${formatDeduction(summary.commission)}',
+              style: muted,
+            ),
+            const SizedBox(height: 16),
+            _PaymentSplitBar(
+              cash: summary.cash.revenue,
+              card: summary.card.revenue,
+            ),
+            const SizedBox(height: 10),
             Row(
               children: [
                 Expanded(
-                  child: _PaymentStat(
-                    icon: Icons.payments_outlined,
-                    label: 'Наличные',
-                    breakdown: summary.cash,
+                  child: Text(
+                    'Наличные: ${formatMoney(summary.cash.revenue)}',
+                    style: legend?.copyWith(color: colors.cash),
                   ),
                 ),
-                Expanded(
-                  child: _PaymentStat(
-                    icon: Icons.credit_card,
-                    label: 'Карта',
-                    breakdown: summary.card,
-                  ),
+                Text(
+                  'Карта: ${formatMoney(summary.card.revenue)}',
+                  style: legend?.copyWith(color: colors.card),
                 ),
               ],
             ),
@@ -70,51 +81,44 @@ class SummaryCard extends StatelessWidget {
   }
 }
 
-class _Stat extends StatelessWidget {
-  const _Stat({required this.label, required this.value});
+/// Cash vs card share of the day's revenue; a plain track when there is none.
+class _PaymentSplitBar extends StatelessWidget {
+  const _PaymentSplitBar({required this.cash, required this.card});
 
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: theme.textTheme.labelMedium),
-        Text(value, style: theme.textTheme.titleMedium),
-      ],
-    );
-  }
-}
-
-class _PaymentStat extends StatelessWidget {
-  const _PaymentStat({
-    required this.icon,
-    required this.label,
-    required this.breakdown,
-  });
-
-  final IconData icon;
-  final String label;
-  final PaymentBreakdown breakdown;
+  final int cash;
+  final int card;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Row(
-      children: [
-        Icon(icon, size: 20),
-        const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: theme.textTheme.labelMedium),
-            Text('${breakdown.count} · ${formatMoney(breakdown.revenue)}'),
-          ],
-        ),
-      ],
+    final colors = AppColors.of(context);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: SizedBox(
+        height: 8,
+        child: cash + card == 0
+            ? ColoredBox(color: Theme.of(context).colorScheme.outline)
+            : Row(
+                children: [
+                  if (cash > 0)
+                    Expanded(
+                      flex: cash,
+                      child: ColoredBox(
+                        key: const Key('split-cash'),
+                        color: colors.cash,
+                      ),
+                    ),
+                  if (cash > 0 && card > 0) const SizedBox(width: 3),
+                  if (card > 0)
+                    Expanded(
+                      flex: card,
+                      child: ColoredBox(
+                        key: const Key('split-card'),
+                        color: colors.card,
+                      ),
+                    ),
+                ],
+              ),
+      ),
     );
   }
 }
