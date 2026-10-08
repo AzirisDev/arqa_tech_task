@@ -44,6 +44,7 @@ class DayController extends ChangeNotifier {
   /// Opens the most recent day that has trips, or today when there are none
   /// (or the list cannot be fetched).
   Future<void> init() async {
+    final generation = _generation;
     LocalDate initial;
     try {
       final days = await _api.fetchDays();
@@ -51,7 +52,8 @@ class DayController extends ChangeNotifier {
     } on ApiFailure {
       initial = _today();
     }
-    if (_disposed) return;
+    // The user picked a day while the list was loading: keep their choice.
+    if (_disposed || generation != _generation) return;
     await select(initial);
   }
 

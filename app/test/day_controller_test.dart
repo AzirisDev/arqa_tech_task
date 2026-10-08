@@ -23,6 +23,20 @@ void main() {
     expect((controller.state as DayLoaded).data.trips, hasLength(2));
   });
 
+  test('init does not override a day selected while days are loading',
+      () async {
+    final days = Completer<List<LocalDate>>();
+    final api = FakeApiClient()..onFetchDays = () => days.future;
+    final controller = DayController(api: api, today: () => today);
+
+    final init = controller.init();
+    await controller.select(oct1);
+    days.complete([oct5]);
+    await init;
+
+    expect(controller.date, oct1);
+  });
+
   test('init falls back to today when there are no trips', () async {
     final controller = DayController(api: FakeApiClient(), today: () => today);
     await controller.init();

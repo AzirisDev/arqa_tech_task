@@ -168,6 +168,24 @@ void main() {
     expect(results.single?.id, 'fixed-id');
   });
 
+  testWidgets('a conflict closes the form instead of offering a retry',
+      (tester) async {
+    final api = FakeApiClient()
+      ..onSaveTrip = (_) async => throw const ConflictFailure();
+    final results = await openForm(tester, api);
+
+    await fill(tester);
+    await submit(tester);
+
+    expect(find.text(const ConflictFailure().message), findsOneWidget);
+    expect(find.text('Закрыть'), findsOneWidget);
+
+    await submit(tester);
+
+    expect(results, [null]);
+    expect(api.savedTrips, hasLength(1));
+  });
+
   testWidgets('server validation errors appear under their fields',
       (tester) async {
     final api = FakeApiClient()

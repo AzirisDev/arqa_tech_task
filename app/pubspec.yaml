@@ -1,5 +1,5 @@
 name: shift_diary
-description: "A new Flutter project."
+description: "Дневник смен водителя — Flutter-клиент."
 publish_to: 'none'
 version: 0.1.0+1
 

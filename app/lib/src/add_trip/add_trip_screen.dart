@@ -49,6 +49,7 @@ class _AddTripScreenState extends State<AddTripScreen> {
   Map<String, String> _errors = const {};
   String? _failure;
   bool _saving = false;
+  bool _conflict = false;
 
   @override
   void dispose() {
@@ -102,6 +103,7 @@ class _AddTripScreenState extends State<AddTripScreen> {
     setState(() {
       _errors = const {};
       _failure = null;
+      _conflict = false;
       _saving = true;
     });
     try {
@@ -109,6 +111,13 @@ class _AddTripScreenState extends State<AddTripScreen> {
       if (mounted) Navigator.of(context).pop(saved);
     } on ValidationFailure catch (failure) {
       if (mounted) setState(() => _errors = failure.errors);
+    } on ConflictFailure catch (failure) {
+      if (mounted) {
+        setState(() {
+          _failure = failure.message;
+          _conflict = true;
+        });
+      }
     } on ApiFailure catch (failure) {
       if (mounted) setState(() => _failure = failure.message);
     } finally {
@@ -260,13 +269,21 @@ class _AddTripScreenState extends State<AddTripScreen> {
                 ),
               FilledButton(
                 key: const Key('submit'),
-                onPressed: _saving ? null : _submit,
+                onPressed: _saving
+                    ? null
+                    : _conflict
+                        ? () => Navigator.of(context).pop()
+                        : _submit,
                 child: _saving
                     ? const SizedBox.square(
                         dimension: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : Text(_failure == null ? 'Сохранить' : 'Повторить'),
+                    : Text(_conflict
+                        ? 'Закрыть'
+                        : _failure == null
+                            ? 'Сохранить'
+                            : 'Повторить'),
               ),
             ],
           ),
