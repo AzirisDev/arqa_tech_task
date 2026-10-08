@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -372,5 +374,106 @@ void main() {
   testWidgets('submit button uses the mock wording', (tester) async {
     await openForm(tester, FakeApiClient());
     expect(find.text('СОХРАНИТЬ ПОЕЗДКУ'), findsOneWidget);
+  });
+
+  group('accessibility', () {
+    testWidgets('inputs carry their labels for screen readers', (tester) async {
+      final handle = tester.ensureSemantics();
+      await openForm(tester, FakeApiClient());
+
+      for (final (key, label) in [
+        ('amount', 'Сумма (₸)'),
+        ('commission', 'Комиссия (₸)'),
+        ('start-time', 'Время начала'),
+        ('end-time', 'Время окончания'),
+      ]) {
+        await tester.ensureVisible(find.byKey(Key(key)));
+        await tester.pump();
+        // The time fields also announce their «ЧЧ:ММ» hint, so the label is
+        // checked as a prefix rather than matched exactly.
+        final node = tester.getSemantics(find.byKey(Key(key)));
+        expect(node.label, startsWith(label), reason: key);
+        expect(node, isSemantics(isTextField: true), reason: key);
+      }
+      handle.dispose();
+    });
+
+    testWidgets('the date field is a button labelled «Дата»', (tester) async {
+      final handle = tester.ensureSemantics();
+      await openForm(tester, FakeApiClient());
+
+      await tester.ensureVisible(find.byKey(const Key('date')));
+      await tester.pump();
+      final node = tester.getSemantics(find.byKey(const Key('date')));
+      expect(node, isSemantics(isButton: true));
+      expect(node.label, contains('Дата'));
+      handle.dispose();
+    });
+
+    testWidgets('tap targets are large enough', (tester) async {
+      final handle = tester.ensureSemantics();
+      await openForm(tester, FakeApiClient());
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+      handle.dispose();
+    });
+
+    testWidgets('the form does not overflow at 2x text on a small phone', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(360, 780);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(Brightness.dark),
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: const TextScaler.linear(2.0)),
+            child: child!,
+          ),
+          home: AddTripScreen(api: FakeApiClient(), initialDate: day),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the toggle and date are disabled while saving', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      final api = FakeApiClient()..onSaveTrip = (_) => Completer<Trip>().future;
+      await openForm(tester, api);
+      await fill(tester);
+      expect(
+        tester.getSemantics(find.text('Карта')),
+        isSemantics(hasEnabledState: true, isEnabled: true),
+      );
+      await tester.tap(find.byKey(const Key('submit')));
+      await tester.pump();
+
+      for (final finder in [
+        find.text('Карта'),
+        find.byKey(const Key('date')),
+      ]) {
+        expect(
+          tester.getSemantics(finder),
+          isSemantics(hasEnabledState: true, isEnabled: false),
+        );
+      }
+      handle.dispose();
+    });
+
+    testWidgets('the money fields show no placeholder value', (tester) async {
+      await openForm(tester, FakeApiClient());
+      for (final key in ['amount', 'commission']) {
+        expect(
+          tester.widget<TextField>(find.byKey(Key(key))).decoration?.hintText,
+          isNull,
+        );
+      }
+    });
   });
 }

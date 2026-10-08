@@ -190,11 +190,7 @@ class _AddTripScreenState extends State<AddTripScreen> {
     onChanged: (_) => _clearErrors(clears),
     onTapOutside: (_) => _unfocus(),
     inputFormatters: const [MoneyInputFormatter()],
-    decoration: InputDecoration(
-      hintText: '0',
-      errorText: error,
-      errorMaxLines: 2,
-    ),
+    decoration: InputDecoration(errorText: error, errorMaxLines: 2),
   );
 
   @override
@@ -223,22 +219,31 @@ class _AddTripScreenState extends State<AddTripScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const _FieldLabel('Сумма (₸)'),
-                  _moneyField(
-                    const Key('amount'),
-                    _amount,
-                    _errors['amount'],
-                    ['amount', 'commission'],
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      fontFeatures: const [FontFeature.tabularFigures()],
+                  _LabeledField(
+                    label: 'Сумма (₸)',
+                    child: _moneyField(
+                      const Key('amount'),
+                      _amount,
+                      _errors['amount'],
+                      ['amount', 'commission'],
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const _FieldLabel('Способ оплаты'),
-                  _PaymentToggle(
-                    selected: _payment,
-                    onSelected: _saving ? null : _selectPayment,
+                  // Not merged: each option stays its own button.
+                  _LabeledField(
+                    label: 'Способ оплаты',
+                    merge: false,
+                    child: Opacity(
+                      opacity: _saving ? 0.5 : 1,
+                      child: _PaymentToggle(
+                        selected: _payment,
+                        onSelected: _saving ? null : _selectPayment,
+                      ),
+                    ),
                   ),
                   if (_errors['payment'] case final error?)
                     Padding(
@@ -246,42 +251,58 @@ class _AddTripScreenState extends State<AddTripScreen> {
                       child: Text(error, style: fieldErrorStyle),
                     ),
                   const SizedBox(height: 20),
-                  const _FieldLabel('Дата'),
-                  Ink(
-                    decoration: BoxDecoration(
-                      color: AppColors.of(context).inputFill,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: InkWell(
-                      key: const Key('date'),
-                      borderRadius: BorderRadius.circular(12),
-                      onTap: _saving ? null : _pickDate,
-                      child: InputDecorator(
-                        decoration: const InputDecoration(
-                          filled: false,
-                          prefixIcon: Icon(Icons.calendar_today_outlined),
-                        ),
-                        isEmpty: false,
-                        child: Text(
-                          formatDayLong(_date),
-                          style: theme.textTheme.bodyLarge,
+                  _LabeledField(
+                    label: 'Дата',
+                    child: Opacity(
+                      opacity: _saving ? 0.5 : 1,
+                      child: Semantics(
+                        button: true,
+                        enabled: !_saving,
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            color: AppColors.of(context).inputFill,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: InkWell(
+                            key: const Key('date'),
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: _saving ? null : _pickDate,
+                            child: InputDecorator(
+                              decoration: const InputDecoration(
+                                filled: false,
+                                prefixIcon: Icon(Icons.calendar_today_outlined),
+                              ),
+                              isEmpty: false,
+                              child: Text(
+                                formatDayLong(_date),
+                                style: theme.textTheme.bodyLarge,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const _FieldLabel('Время начала'),
-                  _clockField(
-                    const Key('start-time'),
-                    _startTime,
-                    _errors['start'],
-                    ['start', 'end'],
+                  _LabeledField(
+                    label: 'Время начала',
+                    child: _clockField(
+                      const Key('start-time'),
+                      _startTime,
+                      _errors['start'],
+                      ['start', 'end'],
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  const _FieldLabel('Время окончания'),
-                  _clockField(const Key('end-time'), _endTime, _errors['end'], [
-                    'end',
-                  ]),
+                  _LabeledField(
+                    label: 'Время окончания',
+                    child: _clockField(
+                      const Key('end-time'),
+                      _endTime,
+                      _errors['end'],
+                      ['end'],
+                    ),
+                  ),
                   SwitchListTile(
                     key: const Key('ends-next-day'),
                     contentPadding: EdgeInsets.zero,
@@ -295,12 +316,14 @@ class _AddTripScreenState extends State<AddTripScreen> {
                           },
                   ),
                   const SizedBox(height: 4),
-                  const _FieldLabel('Комиссия (₸)'),
-                  _moneyField(
-                    const Key('commission'),
-                    _commission,
-                    _errors['commission'],
-                    ['commission'],
+                  _LabeledField(
+                    label: 'Комиссия (₸)',
+                    child: _moneyField(
+                      const Key('commission'),
+                      _commission,
+                      _errors['commission'],
+                      ['commission'],
+                    ),
                   ),
                 ],
               ),
@@ -345,6 +368,33 @@ class _AddTripScreenState extends State<AddTripScreen> {
         ),
       ),
     );
+  }
+}
+
+/// A label above its input. The pair is merged into one semantics node so a
+/// screen reader announces the label with the input (the label is no longer
+/// part of the `InputDecoration`).
+class _LabeledField extends StatelessWidget {
+  const _LabeledField({
+    required this.label,
+    required this.child,
+    this.merge = true,
+  });
+
+  final String label;
+  final Widget child;
+
+  /// False for a group of several controls (the payment toggle), which must
+  /// stay separate nodes.
+  final bool merge;
+
+  @override
+  Widget build(BuildContext context) {
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [_FieldLabel(label), child],
+    );
+    return merge ? MergeSemantics(child: content) : content;
   }
 }
 
@@ -431,24 +481,32 @@ class _PaymentOption extends StatelessWidget {
       child: Semantics(
         button: true,
         selected: selected,
+        enabled: onTap != null,
+        inMutuallyExclusiveGroup: true,
         child: Material(
           color: selected ? color : Colors.transparent,
           shape: const StadiumBorder(),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 48),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+              alignment: Alignment.center,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(icon, size: 18, color: foreground),
                   const SizedBox(width: 8),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      color: foreground,
-                      fontWeight: FontWeight.w600,
+                  Flexible(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: foreground,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
