@@ -237,19 +237,24 @@ class _AddTripScreenState extends State<AddTripScreen> {
                   _LabeledField(
                     label: 'Способ оплаты',
                     merge: false,
-                    child: Opacity(
-                      opacity: _saving ? 0.5 : 1,
-                      child: _PaymentToggle(
-                        selected: _payment,
-                        onSelected: _saving ? null : _selectPayment,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Opacity(
+                          opacity: _saving ? 0.5 : 1,
+                          child: _PaymentToggle(
+                            selected: _payment,
+                            onSelected: _saving ? null : _selectPayment,
+                          ),
+                        ),
+                        if (_errors['payment'] case final error?)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                            child: Text(error, style: fieldErrorStyle),
+                          ),
+                      ],
                     ),
                   ),
-                  if (_errors['payment'] case final error?)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-                      child: Text(error, style: fieldErrorStyle),
-                    ),
                   const SizedBox(height: 20),
                   _LabeledField(
                     label: 'Дата',
@@ -394,7 +399,9 @@ class _LabeledField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [_FieldLabel(label), child],
     );
-    return merge ? MergeSemantics(child: content) : content;
+    return merge
+        ? MergeSemantics(child: content)
+        : Semantics(container: true, child: content);
   }
 }
 
@@ -491,7 +498,7 @@ class _PaymentOption extends StatelessWidget {
             onTap: onTap,
             child: Container(
               constraints: const BoxConstraints(minHeight: 48),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+              padding: const EdgeInsets.symmetric(vertical: 10),
               alignment: Alignment.center,
               child: Row(
                 mainAxisSize: MainAxisSize.min,

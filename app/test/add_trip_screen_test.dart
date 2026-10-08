@@ -466,6 +466,48 @@ void main() {
       handle.dispose();
     });
 
+    testWidgets('the payment label is read with its toggle and error', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await openForm(tester, FakeApiClient());
+      await submit(tester);
+      await tester.ensureVisible(find.text('Способ оплаты'));
+      await tester.pump();
+
+      final label = tester.getSemantics(find.text('Способ оплаты')).label;
+      expect(label, contains('Способ оплаты'));
+      expect(label, isNot(contains('Сумма')));
+      expect(label, contains('Выберите способ оплаты'));
+
+      // «Способ оплаты» is its own container holding the options (and not
+      // the parent of the other fields), so it is read with the toggle.
+      bool isInside(SemanticsNode? node, SemanticsNode ancestor) {
+        for (var n = node; n != null; n = n.parent) {
+          if (n.id == ancestor.id) return true;
+        }
+        return false;
+      }
+
+      final labelNode = tester.getSemantics(find.text('Способ оплаты'));
+      expect(
+        isInside(tester.getSemantics(find.text('Карта')), labelNode),
+        isTrue,
+      );
+      expect(
+        isInside(tester.getSemantics(find.text('Наличные')), labelNode),
+        isTrue,
+      );
+      expect(
+        isInside(
+          tester.getSemantics(find.byKey(const Key('amount'))),
+          labelNode,
+        ),
+        isFalse,
+      );
+      handle.dispose();
+    });
+
     testWidgets('the money fields show no placeholder value', (tester) async {
       await openForm(tester, FakeApiClient());
       for (final key in ['amount', 'commission']) {
