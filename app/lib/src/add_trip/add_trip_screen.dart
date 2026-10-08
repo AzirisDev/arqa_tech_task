@@ -157,6 +157,7 @@ class _AddTripScreenState extends State<AddTripScreen> {
       enabled: !_saving,
       keyboardType: TextInputType.number,
       onChanged: (_) => _clearErrors(clears),
+      onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
       inputFormatters: const [ClockInputFormatter()],
       decoration: InputDecoration(
         labelText: label,
@@ -179,6 +180,7 @@ class _AddTripScreenState extends State<AddTripScreen> {
     enabled: !_saving,
     keyboardType: TextInputType.number,
     onChanged: (_) => _clearErrors(clears),
+    onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
     decoration: InputDecoration(labelText: label, errorText: error),
   );
@@ -196,6 +198,7 @@ class _AddTripScreenState extends State<AddTripScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Новая поездка')),
       body: ListView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.all(16),
         children: [
           Align(

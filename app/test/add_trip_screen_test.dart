@@ -259,4 +259,32 @@ void main() {
 
     expect(find.text('09:30'), findsOneWidget);
   });
+
+  testWidgets('tapping outside a field closes the keyboard and normalises '
+      'the time', (tester) async {
+    await openForm(tester, FakeApiClient());
+
+    await tester.enterText(find.byKey(const Key('start-time')), '930');
+    await tester.pump();
+    await tester.tapAt(tester.getCenter(find.text('Новая поездка')));
+    await tester.pump();
+
+    expect(find.text('09:30'), findsOneWidget);
+    expect(tester.testTextInput.isVisible, isFalse);
+  });
+
+  testWidgets('invalid time stays as typed when leaving the field', (
+    tester,
+  ) async {
+    await openForm(tester, FakeApiClient());
+
+    await tester.enterText(find.byKey(const Key('start-time')), '2460');
+    await tester.pump();
+    expect(find.text('24:60'), findsOneWidget);
+
+    await tester.tapAt(tester.getCenter(find.text('Новая поездка')));
+    await tester.pump();
+
+    expect(find.text('24:60'), findsOneWidget);
+  });
 }
