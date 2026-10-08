@@ -247,17 +247,25 @@ class _AddTripScreenState extends State<AddTripScreen> {
                     ),
                   const SizedBox(height: 20),
                   const _FieldLabel('Дата'),
-                  InkWell(
-                    key: const Key('date'),
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: _saving ? null : _pickDate,
-                    child: InputDecorator(
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.calendar_today_outlined),
-                      ),
-                      child: Text(
-                        formatDayLong(_date),
-                        style: theme.textTheme.bodyLarge,
+                  Ink(
+                    decoration: BoxDecoration(
+                      color: AppColors.of(context).inputFill,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: InkWell(
+                      key: const Key('date'),
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: _saving ? null : _pickDate,
+                      child: InputDecorator(
+                        decoration: const InputDecoration(
+                          filled: false,
+                          prefixIcon: Icon(Icons.calendar_today_outlined),
+                        ),
+                        isEmpty: false,
+                        child: Text(
+                          formatDayLong(_date),
+                          style: theme.textTheme.bodyLarge,
+                        ),
                       ),
                     ),
                   ),

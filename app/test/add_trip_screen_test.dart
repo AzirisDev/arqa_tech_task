@@ -98,6 +98,26 @@ void main() {
     );
   });
 
+  testWidgets('tapping the date field opens the date picker', (tester) async {
+    await openForm(tester, FakeApiClient());
+
+    await tester.ensureVisible(find.byKey(const Key('date')));
+    await tester.tap(find.byKey(const Key('date')));
+    await tester.pumpAndSettle();
+    expect(find.byType(DatePickerDialog), findsOneWidget);
+
+    await tester.tap(
+      find
+          .descendant(
+            of: find.byType(DatePickerDialog),
+            matching: find.byType(TextButton),
+          )
+          .first,
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(DatePickerDialog), findsNothing);
+  });
+
   testWidgets('end before start is rejected locally', (tester) async {
     final api = FakeApiClient();
     await openForm(tester, api);
