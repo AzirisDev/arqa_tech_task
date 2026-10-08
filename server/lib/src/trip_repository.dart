@@ -28,10 +28,10 @@ class TripRepository {
   }
 
   TripRepository.inMemory({required Duration driverOffset})
-      : this(sqlite3.openInMemory(), driverOffset: driverOffset);
+    : this(sqlite3.openInMemory(), driverOffset: driverOffset);
 
   TripRepository.open(String path, {required Duration driverOffset})
-      : this(sqlite3.open(path), driverOffset: driverOffset);
+    : this(sqlite3.open(path), driverOffset: driverOffset);
 
   static const _schema = '''
     CREATE TABLE IF NOT EXISTS trips (
@@ -83,23 +83,23 @@ class TripRepository {
   }
 
   List<Trip> tripsOn(LocalDate date) => [
-        for (final row in _db.select(
-          'SELECT * FROM trips WHERE local_date = ? ORDER BY start_utc, id',
-          [date.toString()],
-        ))
-          _toTrip(row),
-      ];
+    for (final row in _db.select(
+      'SELECT * FROM trips WHERE local_date = ? ORDER BY start_utc, id',
+      [date.toString()],
+    ))
+      _toTrip(row),
+  ];
 
   List<DayCount> days() => [
-        for (final row in _db.select(
-          'SELECT local_date, COUNT(*) AS trip_count FROM trips '
-          'GROUP BY local_date ORDER BY local_date',
-        ))
-          DayCount(
-            LocalDate.tryParse(row['local_date'] as String)!,
-            row['trip_count'] as int,
-          ),
-      ];
+    for (final row in _db.select(
+      'SELECT local_date, COUNT(*) AS trip_count FROM trips '
+      'GROUP BY local_date ORDER BY local_date',
+    ))
+      DayCount(
+        LocalDate.tryParse(row['local_date'] as String)!,
+        row['trip_count'] as int,
+      ),
+  ];
 
   int count() =>
       _db.select('SELECT COUNT(*) AS n FROM trips').first['n'] as int;
@@ -107,11 +107,11 @@ class TripRepository {
   void close() => _db.close();
 
   Trip _toTrip(Row row) => Trip(
-        id: row['id'] as String,
-        start: DateTime.parse(row['start_utc'] as String),
-        end: DateTime.parse(row['end_utc'] as String),
-        amount: row['amount'] as int,
-        payment: PaymentMethod.tryParse(row['payment'])!,
-        commission: row['commission'] as int,
-      );
+    id: row['id'] as String,
+    start: DateTime.parse(row['start_utc'] as String),
+    end: DateTime.parse(row['end_utc'] as String),
+    amount: row['amount'] as int,
+    payment: PaymentMethod.tryParse(row['payment'])!,
+    commission: row['commission'] as int,
+  );
 }

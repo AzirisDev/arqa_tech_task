@@ -11,8 +11,10 @@ Future<void> main() async {
   final offset = parseUtcOffset(env['DRIVER_UTC_OFFSET'] ?? '+05:00');
   // Defaults resolve next to this package, not the working directory.
   final dbPath =
-      env['DB_PATH'] ?? Platform.script.resolve('../data/trips.db').toFilePath();
-  final seedPath = env['SEED_PATH'] ??
+      env['DB_PATH'] ??
+      Platform.script.resolve('../data/trips.db').toFilePath();
+  final seedPath =
+      env['SEED_PATH'] ??
       Platform.script.resolve('../data/trips.json').toFilePath();
 
   final repo = TripRepository.open(dbPath, driverOffset: offset);
@@ -38,8 +40,10 @@ Future<void> main() async {
       .addMiddleware(logRequests())
       .addHandler(buildApi(repo));
   final server = await shelf_io.serve(handler, InternetAddress.anyIPv4, port);
-  stdout.writeln('Shift diary API on http://localhost:${server.port} '
-      '(driver offset ${formatUtcOffset(offset)}, db $dbPath)');
+  stdout.writeln(
+    'Shift diary API on http://localhost:${server.port} '
+    '(driver offset ${formatUtcOffset(offset)}, db $dbPath)',
+  );
 
   ProcessSignal.sigint.watch().first.then((_) async {
     await server.close();

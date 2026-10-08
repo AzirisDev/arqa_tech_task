@@ -61,11 +61,11 @@ Handler buildApi(TripRepository repo) {
           InsertOutcome.created => _json(201, stored),
           InsertOutcome.replayed => _json(200, stored),
           InsertOutcome.conflict => _json(409, {
-              'error': 'conflict',
-              'message':
-                  'Поездка с id "${trip.id}" уже сохранена с другими данными',
-              'existing': stored,
-            }),
+            'error': 'conflict',
+            'message':
+                'Поездка с id "${trip.id}" уже сохранена с другими данными',
+            'existing': stored,
+          }),
         };
     }
   });
@@ -74,18 +74,19 @@ Handler buildApi(TripRepository repo) {
 }
 
 Handler _catchErrors(Handler inner) => (Request request) async {
-      try {
-        return await inner(request);
-      } catch (error, stack) {
-        stderr.writeln(
-            'Unhandled error on ${request.method} ${request.requestedUri}: '
-            '$error\n$stack');
-        return _json(500, {'error': 'internal'});
-      }
-    };
+  try {
+    return await inner(request);
+  } catch (error, stack) {
+    stderr.writeln(
+      'Unhandled error on ${request.method} ${request.requestedUri}: '
+      '$error\n$stack',
+    );
+    return _json(500, {'error': 'internal'});
+  }
+};
 
 Response _json(int status, Object body) => Response(
-      status,
-      body: jsonEncode(body),
-      headers: {'content-type': 'application/json; charset=utf-8'},
-    );
+  status,
+  body: jsonEncode(body),
+  headers: {'content-type': 'application/json; charset=utf-8'},
+);

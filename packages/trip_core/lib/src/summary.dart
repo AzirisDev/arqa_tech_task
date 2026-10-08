@@ -22,13 +22,16 @@ class PaymentBreakdown {
   final int commission;
 
   PaymentBreakdown _add(Trip trip) => PaymentBreakdown(
-        count: count + 1,
-        revenue: revenue + trip.amount,
-        commission: commission + trip.commission,
-      );
+    count: count + 1,
+    revenue: revenue + trip.amount,
+    commission: commission + trip.commission,
+  );
 
-  Map<String, int> toJson() =>
-      {'count': count, 'revenue': revenue, 'commission': commission};
+  Map<String, int> toJson() => {
+    'count': count,
+    'revenue': revenue,
+    'commission': commission,
+  };
 
   @override
   bool operator ==(Object other) =>
@@ -56,12 +59,12 @@ class DaySummary {
   });
 
   factory DaySummary.fromJson(Map<String, Object?> json) => DaySummary(
-        tripCount: json['tripCount'] as int,
-        revenue: json['revenue'] as int,
-        commission: json['commission'] as int,
-        cash: PaymentBreakdown.fromJson(json['cash'] as Map<String, Object?>),
-        card: PaymentBreakdown.fromJson(json['card'] as Map<String, Object?>),
-      );
+    tripCount: json['tripCount'] as int,
+    revenue: json['revenue'] as int,
+    commission: json['commission'] as int,
+    cash: PaymentBreakdown.fromJson(json['cash'] as Map<String, Object?>),
+    card: PaymentBreakdown.fromJson(json['card'] as Map<String, Object?>),
+  );
 
   final int tripCount;
   final int revenue;
@@ -73,13 +76,13 @@ class DaySummary {
   int get net => revenue - commission;
 
   Map<String, Object> toJson() => {
-        'tripCount': tripCount,
-        'revenue': revenue,
-        'commission': commission,
-        'net': net,
-        'cash': cash.toJson(),
-        'card': card.toJson(),
-      };
+    'tripCount': tripCount,
+    'revenue': revenue,
+    'commission': commission,
+    'net': net,
+    'cash': cash.toJson(),
+    'card': card.toJson(),
+  };
 
   @override
   bool operator ==(Object other) =>
@@ -94,7 +97,8 @@ class DaySummary {
   int get hashCode => Object.hash(tripCount, revenue, commission, cash, card);
 
   @override
-  String toString() => 'DaySummary(trips: $tripCount, revenue: $revenue, '
+  String toString() =>
+      'DaySummary(trips: $tripCount, revenue: $revenue, '
       'commission: $commission, net: $net, cash: $cash, card: $card)';
 }
 

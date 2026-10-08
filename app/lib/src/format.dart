@@ -2,8 +2,18 @@ import 'package:trip_core/trip_core.dart';
 
 const _weekdays = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'];
 const _months = [
-  'янв', 'фев', 'мар', 'апр', 'мая', 'июн',
-  'июл', 'авг', 'сен', 'окт', 'ноя', 'дек',
+  'янв',
+  'фев',
+  'мар',
+  'апр',
+  'мая',
+  'июн',
+  'июл',
+  'авг',
+  'сен',
+  'окт',
+  'ноя',
+  'дек',
 ];
 const _nbsp = ' ';
 
@@ -39,7 +49,8 @@ String formatDuration(Duration duration) {
 String formatTripTime(Trip trip, Duration offset) {
   final endsNextDay =
       LocalDate.of(trip.end, offset) != LocalDate.of(trip.start, offset);
-  final range = '${formatClock(trip.start, offset)}–'
+  final range =
+      '${formatClock(trip.start, offset)}–'
       '${formatClock(trip.end, offset)}${endsNextDay ? ' (+1)' : ''}';
   return '$range · ${formatDuration(trip.end.difference(trip.start))}';
 }

@@ -20,23 +20,28 @@ class SummaryCard extends StatelessWidget {
             Text('На руки', style: theme.textTheme.labelLarge),
             Text(
               formatMoney(summary.net),
-              style: theme.textTheme.headlineMedium
-                  ?.copyWith(fontWeight: FontWeight.w600),
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
-                    child: _Stat(
-                        label: 'Поездки', value: '${summary.tripCount}')),
+                  child: _Stat(label: 'Поездки', value: '${summary.tripCount}'),
+                ),
                 Expanded(
-                    child: _Stat(
-                        label: 'Выручка',
-                        value: formatMoney(summary.revenue))),
+                  child: _Stat(
+                    label: 'Выручка',
+                    value: formatMoney(summary.revenue),
+                  ),
+                ),
                 Expanded(
-                    child: _Stat(
-                        label: 'Комиссия',
-                        value: formatMoney(summary.commission))),
+                  child: _Stat(
+                    label: 'Комиссия',
+                    value: formatMoney(summary.commission),
+                  ),
+                ),
               ],
             ),
             const Divider(height: 24),

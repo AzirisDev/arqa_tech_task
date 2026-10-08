@@ -14,7 +14,9 @@ const today = LocalDate(2026, 10, 8);
 void main() {
   test('init opens the latest day that has trips', () async {
     final api = FakeApiClient(
-        days: [oct1, oct5], dayData: {oct5: dayOf(oct5, sampleTrips())});
+      days: [oct1, oct5],
+      dayData: {oct5: dayOf(oct5, sampleTrips())},
+    );
     final controller = DayController(api: api, today: () => today);
 
     await controller.init();
@@ -23,19 +25,21 @@ void main() {
     expect((controller.state as DayLoaded).data.trips, hasLength(2));
   });
 
-  test('init does not override a day selected while days are loading',
-      () async {
-    final days = Completer<List<LocalDate>>();
-    final api = FakeApiClient()..onFetchDays = () => days.future;
-    final controller = DayController(api: api, today: () => today);
+  test(
+    'init does not override a day selected while days are loading',
+    () async {
+      final days = Completer<List<LocalDate>>();
+      final api = FakeApiClient()..onFetchDays = () => days.future;
+      final controller = DayController(api: api, today: () => today);
 
-    final init = controller.init();
-    await controller.select(oct1);
-    days.complete([oct5]);
-    await init;
+      final init = controller.init();
+      await controller.select(oct1);
+      days.complete([oct5]);
+      await init;
 
-    expect(controller.date, oct1);
-  });
+      expect(controller.date, oct1);
+    },
+  );
 
   test('init falls back to today when there are no trips', () async {
     final controller = DayController(api: FakeApiClient(), today: () => today);
@@ -78,26 +82,30 @@ void main() {
     await controller.select(oct1);
 
     expect(controller.state, isA<DayError>());
-    expect((controller.state as DayError).message,
-        const NetworkFailure().message);
+    expect(
+      (controller.state as DayError).message,
+      const NetworkFailure().message,
+    );
   });
 
-  test('a slow response for an old day does not overwrite the newer day',
-      () async {
-    final slow = Completer<DayData>();
-    final api = FakeApiClient()
-      ..onFetchDay = (date) =>
-          date == oct1 ? slow.future : Future.value(dayOf(date, const []));
-    final controller = DayController(api: api, today: () => oct1);
+  test(
+    'a slow response for an old day does not overwrite the newer day',
+    () async {
+      final slow = Completer<DayData>();
+      final api = FakeApiClient()
+        ..onFetchDay = (date) =>
+            date == oct1 ? slow.future : Future.value(dayOf(date, const []));
+      final controller = DayController(api: api, today: () => oct1);
 
-    final first = controller.select(oct1);
-    await controller.select(oct5);
-    slow.complete(dayOf(oct1, sampleTrips()));
-    await first;
+      final first = controller.select(oct1);
+      await controller.select(oct5);
+      slow.complete(dayOf(oct1, sampleTrips()));
+      await first;
 
-    expect(controller.date, oct5);
-    expect((controller.state as DayLoaded).data.date, oct5);
-  });
+      expect(controller.date, oct5);
+      expect((controller.state as DayLoaded).data.date, oct5);
+    },
+  );
 
   test('refresh keeps the current content visible while loading', () async {
     final api = FakeApiClient(dayData: {oct1: dayOf(oct1, sampleTrips())});

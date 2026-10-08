@@ -12,15 +12,21 @@ const today = LocalDate(2026, 10, 8);
 
 Future<void> pumpDay(WidgetTester tester, FakeApiClient api) async {
   await tester.pumpWidget(
-      MaterialApp(home: DayScreen(api: api, today: () => today)));
+    MaterialApp(
+      home: DayScreen(api: api, today: () => today),
+    ),
+  );
   await tester.pumpAndSettle();
 }
 
 void main() {
-  testWidgets('opens the latest day and shows its summary and trips',
-      (tester) async {
+  testWidgets('opens the latest day and shows its summary and trips', (
+    tester,
+  ) async {
     final api = FakeApiClient(
-        days: [oct1], dayData: {oct1: dayOf(oct1, sampleTrips())});
+      days: [oct1],
+      dayData: {oct1: dayOf(oct1, sampleTrips())},
+    );
     await pumpDay(tester, api);
 
     expect(find.text('чт, 1 окт'), findsOneWidget);
@@ -36,7 +42,9 @@ void main() {
 
   testWidgets('arrows switch days and refetch', (tester) async {
     final api = FakeApiClient(
-        days: [oct1], dayData: {oct1: dayOf(oct1, sampleTrips())});
+      days: [oct1],
+      dayData: {oct1: dayOf(oct1, sampleTrips())},
+    );
     await pumpDay(tester, api);
 
     await tester.tap(find.byKey(const Key('next-day')));
@@ -72,8 +80,7 @@ void main() {
     expect(find.text(formatMoney(3315)), findsOneWidget);
   });
 
-  testWidgets('a trip saved from the form appears on its day',
-      (tester) async {
+  testWidgets('a trip saved from the form appears on its day', (tester) async {
     final api = FakeApiClient();
     api.onSaveTrip = (trip) async {
       final date = LocalDate.of(trip.start, plus5);

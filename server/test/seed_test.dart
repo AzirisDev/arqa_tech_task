@@ -16,13 +16,16 @@ void main() {
   test('imports valid entries and skips invalid ones', () {
     final t1 = sampleTrip().toJson(plus5);
     final t2 = sampleTrip(id: 't2').toJson(plus5);
-    final report = seedIfEmpty(repo, jsonEncode([
-      t1,
-      t2,
-      {...t1, 'id': 'bad', 'amount': 0},
-      'garbage',
-      {...t1, 'amount': 1}, // same id as t1, different data
-    ]))!;
+    final report = seedIfEmpty(
+      repo,
+      jsonEncode([
+        t1,
+        t2,
+        {...t1, 'id': 'bad', 'amount': 0},
+        'garbage',
+        {...t1, 'amount': 1}, // same id as t1, different data
+      ]),
+    )!;
 
     expect(report.imported, 2);
     expect(report.skipped, hasLength(3));
@@ -40,8 +43,10 @@ void main() {
   });
 
   test('bundled data/trips.json is fully valid', () {
-    final report =
-        seedIfEmpty(repo, File('data/trips.json').readAsStringSync())!;
+    final report = seedIfEmpty(
+      repo,
+      File('data/trips.json').readAsStringSync(),
+    )!;
     expect(report.skipped, isEmpty);
     expect(report.imported, 13);
 

@@ -19,16 +19,16 @@ final t1 = Trip(
 );
 
 http.Response jsonResponse(Object body, int status) => http.Response(
-      jsonEncode(body),
-      status,
-      headers: {'content-type': 'application/json; charset=utf-8'},
-    );
+  jsonEncode(body),
+  status,
+  headers: {'content-type': 'application/json; charset=utf-8'},
+);
 
 ApiClient clientWith(MockClientHandler handler) => ApiClient(
-      baseUrl: Uri.parse('http://test.local'),
-      driverOffset: plus5,
-      httpClient: MockClient(handler),
-    );
+  baseUrl: Uri.parse('http://test.local'),
+  driverOffset: plus5,
+  httpClient: MockClient(handler),
+);
 
 void main() {
   test('fetchDay requests the day and parses summary and trips', () async {
@@ -51,13 +51,17 @@ void main() {
   });
 
   test('fetchDays returns dates in server order', () async {
-    final api = clientWith((_) async => jsonResponse([
-          {'date': '2026-10-01', 'tripCount': 5},
-          {'date': '2026-10-05', 'tripCount': 3},
-        ], 200));
+    final api = clientWith(
+      (_) async => jsonResponse([
+        {'date': '2026-10-01', 'tripCount': 5},
+        {'date': '2026-10-05', 'tripCount': 3},
+      ], 200),
+    );
 
-    expect(await api.fetchDays(),
-        [const LocalDate(2026, 10, 1), const LocalDate(2026, 10, 5)]);
+    expect(await api.fetchDays(), [
+      const LocalDate(2026, 10, 1),
+      const LocalDate(2026, 10, 5),
+    ]);
   });
 
   test('saveTrip posts trip JSON in driver offset; 201 is success', () async {
@@ -86,24 +90,33 @@ void main() {
   });
 
   test('400 becomes ValidationFailure with field errors', () async {
-    final api = clientWith((_) async => jsonResponse({
-          'errors': {'amount': 'Сумма должна быть больше 0'},
-        }, 400));
+    final api = clientWith(
+      (_) async => jsonResponse({
+        'errors': {'amount': 'Сумма должна быть больше 0'},
+      }, 400),
+    );
 
     await expectLater(
       api.saveTrip(t1),
-      throwsA(isA<ValidationFailure>().having(
-          (f) => f.errors, 'errors', {'amount': 'Сумма должна быть больше 0'})),
+      throwsA(
+        isA<ValidationFailure>().having((f) => f.errors, 'errors', {
+          'amount': 'Сумма должна быть больше 0',
+        }),
+      ),
     );
   });
 
   test('409 becomes ConflictFailure', () async {
-    final api = clientWith((_) async => jsonResponse({'error': 'conflict'}, 409));
+    final api = clientWith(
+      (_) async => jsonResponse({'error': 'conflict'}, 409),
+    );
     await expectLater(api.saveTrip(t1), throwsA(isA<ConflictFailure>()));
   });
 
   test('500 becomes ServerFailure', () async {
-    final api = clientWith((_) async => jsonResponse({'error': 'internal'}, 500));
+    final api = clientWith(
+      (_) async => jsonResponse({'error': 'internal'}, 500),
+    );
     await expectLater(
       api.fetchDay(day),
       throwsA(isA<ServerFailure>().having((f) => f.statusCode, 'status', 500)),

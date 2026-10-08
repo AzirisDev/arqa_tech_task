@@ -29,8 +29,14 @@ void main() {
   });
 
   test('formatTripTime marks trips that end on the next day', () {
-    final late = tripAt('t8', '2026-10-02T23:40:00+05:00',
-        '2026-10-03T00:15:00+05:00', 3500, PaymentMethod.card, 525);
+    final late = tripAt(
+      't8',
+      '2026-10-02T23:40:00+05:00',
+      '2026-10-03T00:15:00+05:00',
+      3500,
+      PaymentMethod.card,
+      525,
+    );
     expect(formatTripTime(late, plus5), '23:40–00:15 (+1) · 35 мин');
   });
 }

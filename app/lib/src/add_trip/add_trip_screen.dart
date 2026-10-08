@@ -25,13 +25,7 @@ class AddTripScreen extends StatefulWidget {
 }
 
 class _AddTripScreenState extends State<AddTripScreen> {
-  static const _fieldKeys = {
-    'start',
-    'end',
-    'amount',
-    'commission',
-    'payment',
-  };
+  static const _fieldKeys = {'start', 'end', 'amount', 'commission', 'payment'};
   static final _clock = RegExp(r'^(\d{1,2}):(\d{2})$');
 
   // Generated once per screen. Every retry re-sends the same id, so a request
@@ -70,21 +64,23 @@ class _AddTripScreenState extends State<AddTripScreen> {
   }
 
   Map<String, Object?> _toJson() => {
-        'id': _tripId,
-        'start': _timestamp(_date, _startTime.text),
-        'end': _timestamp(_endsNextDay ? _date.addDays(1) : _date, _endTime.text),
-        'amount': int.tryParse(_amount.text.trim()),
-        'commission': int.tryParse(_commission.text.trim()),
-        'payment': _payment?.name,
-      };
+    'id': _tripId,
+    'start': _timestamp(_date, _startTime.text),
+    'end': _timestamp(_endsNextDay ? _date.addDays(1) : _date, _endTime.text),
+    'amount': int.tryParse(_amount.text.trim()),
+    'commission': int.tryParse(_commission.text.trim()),
+    'payment': _payment?.name,
+  };
 
   /// Drops the errors an edit may have made stale; they are re-checked on submit.
   void _clearErrors(List<String> keys) {
     if (!keys.any(_errors.containsKey)) return;
-    setState(() => _errors = {
-          for (final entry in _errors.entries)
-            if (!keys.contains(entry.key)) entry.key: entry.value,
-        });
+    setState(
+      () => _errors = {
+        for (final entry in _errors.entries)
+          if (!keys.contains(entry.key)) entry.key: entry.value,
+      },
+    );
   }
 
   Future<void> _submit() async {
@@ -138,34 +134,42 @@ class _AddTripScreenState extends State<AddTripScreen> {
     }
   }
 
-  Widget _clockField(Key key, TextEditingController controller, String label,
-          String? error, List<String> clears) =>
-      TextField(
-        key: key,
-        controller: controller,
-        enabled: !_saving,
-        keyboardType: TextInputType.datetime,
-        onChanged: (_) => _clearErrors(clears),
-        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9:]'))],
-        decoration: InputDecoration(
-          labelText: label,
-          hintText: 'ЧЧ:ММ',
-          errorText: error,
-          errorMaxLines: 2,
-        ),
-      );
+  Widget _clockField(
+    Key key,
+    TextEditingController controller,
+    String label,
+    String? error,
+    List<String> clears,
+  ) => TextField(
+    key: key,
+    controller: controller,
+    enabled: !_saving,
+    keyboardType: TextInputType.datetime,
+    onChanged: (_) => _clearErrors(clears),
+    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9:]'))],
+    decoration: InputDecoration(
+      labelText: label,
+      hintText: 'ЧЧ:ММ',
+      errorText: error,
+      errorMaxLines: 2,
+    ),
+  );
 
-  Widget _moneyField(Key key, TextEditingController controller, String label,
-          String? error, List<String> clears) =>
-      TextField(
-        key: key,
-        controller: controller,
-        enabled: !_saving,
-        keyboardType: TextInputType.number,
-        onChanged: (_) => _clearErrors(clears),
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        decoration: InputDecoration(labelText: label, errorText: error),
-      );
+  Widget _moneyField(
+    Key key,
+    TextEditingController controller,
+    String label,
+    String? error,
+    List<String> clears,
+  ) => TextField(
+    key: key,
+    controller: controller,
+    enabled: !_saving,
+    keyboardType: TextInputType.number,
+    onChanged: (_) => _clearErrors(clears),
+    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+    decoration: InputDecoration(labelText: label, errorText: error),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -196,13 +200,23 @@ class _AddTripScreenState extends State<AddTripScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: _clockField(const Key('start-time'), _startTime,
-                    'Начало', _errors['start'], ['start', 'end']),
+                child: _clockField(
+                  const Key('start-time'),
+                  _startTime,
+                  'Начало',
+                  _errors['start'],
+                  ['start', 'end'],
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _clockField(const Key('end-time'), _endTime,
-                    'Окончание', _errors['end'], ['end']),
+                child: _clockField(
+                  const Key('end-time'),
+                  _endTime,
+                  'Окончание',
+                  _errors['end'],
+                  ['end'],
+                ),
               ),
             ],
           ),
@@ -219,11 +233,20 @@ class _AddTripScreenState extends State<AddTripScreen> {
                   },
           ),
           _moneyField(
-              const Key('amount'), _amount, 'Сумма, ₸', _errors['amount'],
-              ['amount', 'commission']),
+            const Key('amount'),
+            _amount,
+            'Сумма, ₸',
+            _errors['amount'],
+            ['amount', 'commission'],
+          ),
           const SizedBox(height: 12),
-          _moneyField(const Key('commission'), _commission, 'Комиссия, ₸',
-              _errors['commission'], ['commission']),
+          _moneyField(
+            const Key('commission'),
+            _commission,
+            'Комиссия, ₸',
+            _errors['commission'],
+            ['commission'],
+          ),
           const SizedBox(height: 16),
           SegmentedButton<PaymentMethod>(
             segments: const [
@@ -243,8 +266,10 @@ class _AddTripScreenState extends State<AddTripScreen> {
             onSelectionChanged: _saving
                 ? null
                 : (selection) {
-                    setState(() =>
-                        _payment = selection.isEmpty ? null : selection.first);
+                    setState(
+                      () =>
+                          _payment = selection.isEmpty ? null : selection.first,
+                    );
                     _clearErrors(['payment']);
                   },
           ),
@@ -272,18 +297,20 @@ class _AddTripScreenState extends State<AddTripScreen> {
                 onPressed: _saving
                     ? null
                     : _conflict
-                        ? () => Navigator.of(context).pop()
-                        : _submit,
+                    ? () => Navigator.of(context).pop()
+                    : _submit,
                 child: _saving
                     ? const SizedBox.square(
                         dimension: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : Text(_conflict
-                        ? 'Закрыть'
-                        : _failure == null
+                    : Text(
+                        _conflict
+                            ? 'Закрыть'
+                            : _failure == null
                             ? 'Сохранить'
-                            : 'Повторить'),
+                            : 'Повторить',
+                      ),
               ),
             ],
           ),

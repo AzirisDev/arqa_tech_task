@@ -8,16 +8,20 @@ import 'src/api/api_client.dart';
 import 'src/day/day_screen.dart';
 
 const _apiUrl = String.fromEnvironment('API_URL');
-const _driverOffset =
-    String.fromEnvironment('DRIVER_UTC_OFFSET', defaultValue: '+05:00');
+const _driverOffset = String.fromEnvironment(
+  'DRIVER_UTC_OFFSET',
+  defaultValue: '+05:00',
+);
 
 void main() {
   // Android emulator reaches the host machine via 10.0.2.2.
-  final baseUrl = Uri.parse(_apiUrl.isNotEmpty
-      ? _apiUrl
-      : Platform.isAndroid
-          ? 'http://10.0.2.2:8080'
-          : 'http://localhost:8080');
+  final baseUrl = Uri.parse(
+    _apiUrl.isNotEmpty
+        ? _apiUrl
+        : Platform.isAndroid
+        ? 'http://10.0.2.2:8080'
+        : 'http://localhost:8080',
+  );
   final api = ApiClient(
     baseUrl: baseUrl,
     driverOffset: parseUtcOffset(_driverOffset),

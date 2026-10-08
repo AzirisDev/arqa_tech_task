@@ -65,9 +65,9 @@ class ApiClient {
     required this.driverOffset,
     http.Client? httpClient,
     Duration timeout = const Duration(seconds: 10),
-  })  : _baseUrl = baseUrl,
-        _http = httpClient ?? http.Client(),
-        _timeout = timeout;
+  }) : _baseUrl = baseUrl,
+       _http = httpClient ?? http.Client(),
+       _timeout = timeout;
 
   final Uri _baseUrl;
   final http.Client _http;
@@ -81,10 +81,13 @@ class ApiClient {
   Future<List<LocalDate>> fetchDays() async {
     final response = await _send(() => _http.get(_uri('/api/days')));
     _expectOk(response);
-    return _parse(response, (json) => [
-          for (final entry in json as List)
-            LocalDate.tryParse((entry as Map)['date'] as String)!,
-        ]);
+    return _parse(
+      response,
+      (json) => [
+        for (final entry in json as List)
+          LocalDate.tryParse((entry as Map)['date'] as String)!,
+      ],
+    );
   }
 
   Future<DayData> fetchDay(LocalDate date) async {
@@ -106,18 +109,24 @@ class ApiClient {
   /// Saves [trip]. Safe to repeat with the same trip after a failure: the
   /// server answers 200 for a repeat, which counts as success here.
   Future<Trip> saveTrip(Trip trip) async {
-    final response = await _send(() => _http.post(
-          _uri('/api/trips'),
-          headers: {'content-type': 'application/json'},
-          body: jsonEncode(trip.toJson(driverOffset)),
-        ));
+    final response = await _send(
+      () => _http.post(
+        _uri('/api/trips'),
+        headers: {'content-type': 'application/json'},
+        body: jsonEncode(trip.toJson(driverOffset)),
+      ),
+    );
     switch (response.statusCode) {
       case 200 || 201:
         return _parse(
-            response, (json) => Trip.fromJson(json as Map<String, Object?>));
+          response,
+          (json) => Trip.fromJson(json as Map<String, Object?>),
+        );
       case 400:
-        final errors = _parse(response,
-            (json) => Map<String, String>.from((json as Map)['errors'] as Map));
+        final errors = _parse(
+          response,
+          (json) => Map<String, String>.from((json as Map)['errors'] as Map),
+        );
         throw ValidationFailure(errors);
       case 409:
         throw const ConflictFailure();

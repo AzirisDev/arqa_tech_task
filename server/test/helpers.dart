@@ -10,12 +10,11 @@ Trip sampleTrip({
   int amount = 2400,
   PaymentMethod payment = PaymentMethod.card,
   int commission = 360,
-}) =>
-    Trip(
-      id: id,
-      start: DateTime.parse(start),
-      end: DateTime.parse(end),
-      amount: amount,
-      payment: payment,
-      commission: commission,
-    );
+}) => Trip(
+  id: id,
+  start: DateTime.parse(start),
+  end: DateTime.parse(end),
+  amount: amount,
+  payment: payment,
+  commission: commission,
+);

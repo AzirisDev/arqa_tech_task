@@ -18,12 +18,18 @@ void main() {
   tearDown(() => repo.close());
 
   /// Calls the handler directly (no socket). [body] may be a raw string.
-  Future<(int, Object?)> call(String method, String path, [Object? body]) async {
-    final response = await api(Request(
-      method,
-      Uri.parse('http://localhost$path'),
-      body: body == null ? null : (body is String ? body : jsonEncode(body)),
-    ));
+  Future<(int, Object?)> call(
+    String method,
+    String path, [
+    Object? body,
+  ]) async {
+    final response = await api(
+      Request(
+        method,
+        Uri.parse('http://localhost$path'),
+        body: body == null ? null : (body is String ? body : jsonEncode(body)),
+      ),
+    );
     expect(response.headers['content-type'], startsWith('application/json'));
     final text = await response.readAsString();
     return (response.statusCode, text.isEmpty ? null : jsonDecode(text));
@@ -49,8 +55,10 @@ void main() {
 
     test('same id with different data: 409, original kept', () async {
       await call('POST', '/api/trips', t1);
-      final (status, body) =
-          await call('POST', '/api/trips', {...t1, 'amount': 9999});
+      final (status, body) = await call('POST', '/api/trips', {
+        ...t1,
+        'amount': 9999,
+      });
       expect(status, 409);
       body as Map<String, Object?>;
       expect(body['error'], 'conflict');
@@ -58,21 +66,24 @@ void main() {
       expect(repo.findById('t1')!.amount, 2400);
     });
 
-    test('re-sending the echoed trip (fractional start) is a 200 replay',
-        () async {
-      final (status, echoed) = await call('POST', '/api/trips', {
-        ...t1,
-        'start': '2026-10-01T08:10:00.250+05:00',
-      });
-      expect(status, 201);
-      final (replayStatus, _) = await call('POST', '/api/trips', echoed);
-      expect(replayStatus, 200);
-      expect(repo.count(), 1);
-    });
+    test(
+      're-sending the echoed trip (fractional start) is a 200 replay',
+      () async {
+        final (status, echoed) = await call('POST', '/api/trips', {
+          ...t1,
+          'start': '2026-10-01T08:10:00.250+05:00',
+        });
+        expect(status, 201);
+        final (replayStatus, _) = await call('POST', '/api/trips', echoed);
+        expect(replayStatus, 200);
+        expect(repo.count(), 1);
+      },
+    );
 
     test('20 parallel identical requests store exactly one trip', () async {
       final results = await Future.wait(
-          List.generate(20, (_) => call('POST', '/api/trips', t1)));
+        List.generate(20, (_) => call('POST', '/api/trips', t1)),
+      );
       final statuses = results.map((r) => r.$1).toList();
       expect(statuses.where((s) => s == 201), hasLength(1));
       expect(statuses.where((s) => s == 200), hasLength(19));
@@ -111,19 +122,23 @@ void main() {
   group('GET /api/days/<date>', () {
     setUp(() {
       repo.insert(sampleTrip());
-      repo.insert(sampleTrip(
-        id: 't2',
-        start: '2026-10-01T09:05:00+05:00',
-        end: '2026-10-01T09:20:00+05:00',
-        amount: 1500,
-        payment: PaymentMethod.cash,
-        commission: 225,
-      ));
-      repo.insert(sampleTrip(
-        id: 'other-day',
-        start: '2026-10-02T08:00:00+05:00',
-        end: '2026-10-02T08:30:00+05:00',
-      ));
+      repo.insert(
+        sampleTrip(
+          id: 't2',
+          start: '2026-10-01T09:05:00+05:00',
+          end: '2026-10-01T09:20:00+05:00',
+          amount: 1500,
+          payment: PaymentMethod.cash,
+          commission: 225,
+        ),
+      );
+      repo.insert(
+        sampleTrip(
+          id: 'other-day',
+          start: '2026-10-02T08:00:00+05:00',
+          end: '2026-10-02T08:30:00+05:00',
+        ),
+      );
     });
 
     test('returns trips of that driver-local day with summary', () async {
@@ -131,7 +146,10 @@ void main() {
       expect(status, 200);
       body as Map<String, Object?>;
       expect(body['date'], '2026-10-01');
-      expect((body['trips'] as List).map((t) => (t as Map)['id']), ['t1', 't2']);
+      expect((body['trips'] as List).map((t) => (t as Map)['id']), [
+        't1',
+        't2',
+      ]);
       expect(body['summary'], {
         'tripCount': 2,
         'revenue': 3900,

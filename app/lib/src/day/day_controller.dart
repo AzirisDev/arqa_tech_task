@@ -26,9 +26,9 @@ class DayError extends DayState {
 /// Selected day and its loading state.
 class DayController extends ChangeNotifier {
   DayController({required ApiClient api, required LocalDate Function() today})
-      : _api = api,
-        _today = today,
-        _date = today();
+    : _api = api,
+      _today = today,
+      _date = today();
 
   final ApiClient _api;
   final LocalDate Function() _today;

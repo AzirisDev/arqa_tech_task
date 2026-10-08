@@ -12,26 +12,30 @@ const day = LocalDate(2026, 10, 1);
 /// Returns the list that receives the popped result.
 Future<List<Trip?>> openForm(WidgetTester tester, FakeApiClient api) async {
   final results = <Trip?>[];
-  await tester.pumpWidget(MaterialApp(
-    home: Builder(
-      builder: (context) => Scaffold(
-        body: Center(
-          child: TextButton(
-            onPressed: () async => results.add(
-              await Navigator.of(context).push<Trip>(MaterialPageRoute(
-                builder: (_) => AddTripScreen(
-                  api: api,
-                  initialDate: day,
-                  newId: () => 'fixed-id',
+  await tester.pumpWidget(
+    MaterialApp(
+      home: Builder(
+        builder: (context) => Scaffold(
+          body: Center(
+            child: TextButton(
+              onPressed: () async => results.add(
+                await Navigator.of(context).push<Trip>(
+                  MaterialPageRoute(
+                    builder: (_) => AddTripScreen(
+                      api: api,
+                      initialDate: day,
+                      newId: () => 'fixed-id',
+                    ),
+                  ),
                 ),
-              )),
+              ),
+              child: const Text('open'),
             ),
-            child: const Text('open'),
           ),
         ),
       ),
     ),
-  ));
+  );
   await tester.tap(find.text('open'));
   await tester.pumpAndSettle();
   return results;
@@ -59,8 +63,9 @@ Future<void> submit(WidgetTester tester) async {
 }
 
 void main() {
-  testWidgets('empty form shows every field error and does not call server',
-      (tester) async {
+  testWidgets('empty form shows every field error and does not call server', (
+    tester,
+  ) async {
     final api = FakeApiClient();
     await openForm(tester, api);
 
@@ -70,8 +75,10 @@ void main() {
     expect(find.text('Некорректное время окончания'), findsOneWidget);
     expect(find.text('Сумма должна быть целым числом'), findsOneWidget);
     expect(find.text('Комиссия должна быть целым числом'), findsOneWidget);
-    expect(find.text('Выберите способ оплаты: наличные или карта'),
-        findsOneWidget);
+    expect(
+      find.text('Выберите способ оплаты: наличные или карта'),
+      findsOneWidget,
+    );
     expect(api.savedTrips, isEmpty);
   });
 
@@ -114,8 +121,9 @@ void main() {
     expect(find.text('Окончание должно быть позже начала'), findsNothing);
   });
 
-  testWidgets('valid trip is saved in driver offset and returned',
-      (tester) async {
+  testWidgets('valid trip is saved in driver offset and returned', (
+    tester,
+  ) async {
     final api = FakeApiClient();
     final results = await openForm(tester, api);
 
@@ -132,8 +140,9 @@ void main() {
     expect(results.single, saved);
   });
 
-  testWidgets('"ends next day" moves the end to the following date',
-      (tester) async {
+  testWidgets('"ends next day" moves the end to the following date', (
+    tester,
+  ) async {
     final api = FakeApiClient();
     await openForm(tester, api);
 
@@ -142,12 +151,15 @@ void main() {
     await tester.tap(find.byKey(const Key('ends-next-day')));
     await submit(tester);
 
-    expect(api.savedTrips.single.end,
-        DateTime.parse('2026-10-02T00:15:00+05:00'));
+    expect(
+      api.savedTrips.single.end,
+      DateTime.parse('2026-10-02T00:15:00+05:00'),
+    );
   });
 
-  testWidgets('retry after a network failure re-sends the same id',
-      (tester) async {
+  testWidgets('retry after a network failure re-sends the same id', (
+    tester,
+  ) async {
     var attempts = 0;
     final api = FakeApiClient()
       ..onSaveTrip = (trip) async {
@@ -168,8 +180,9 @@ void main() {
     expect(results.single?.id, 'fixed-id');
   });
 
-  testWidgets('a conflict closes the form instead of offering a retry',
-      (tester) async {
+  testWidgets('a conflict closes the form instead of offering a retry', (
+    tester,
+  ) async {
     final api = FakeApiClient()
       ..onSaveTrip = (_) async => throw const ConflictFailure();
     final results = await openForm(tester, api);
@@ -186,11 +199,13 @@ void main() {
     expect(api.savedTrips, hasLength(1));
   });
 
-  testWidgets('server validation errors appear under their fields',
-      (tester) async {
+  testWidgets('server validation errors appear under their fields', (
+    tester,
+  ) async {
     final api = FakeApiClient()
-      ..onSaveTrip = (_) async => throw const ValidationFailure(
-          {'commission': 'Комиссия не может превышать сумму'});
+      ..onSaveTrip = (_) async => throw const ValidationFailure({
+        'commission': 'Комиссия не может превышать сумму',
+      });
     await openForm(tester, api);
 
     await fill(tester);

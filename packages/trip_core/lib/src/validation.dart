@@ -40,7 +40,13 @@ DateTime? parseInstant(Object? value) {
   if (offsetHours > 14 || offsetMinutes > 59) return null;
   final fields = [for (var i = 1; i <= 6; i++) int.parse(match[i] ?? '0')];
   final wall = DateTime.utc(
-      fields[0], fields[1], fields[2], fields[3], fields[4], fields[5]);
+    fields[0],
+    fields[1],
+    fields[2],
+    fields[3],
+    fields[4],
+    fields[5],
+  );
   final normalized = [
     wall.year,
     wall.month,
@@ -54,8 +60,14 @@ DateTime? parseInstant(Object? value) {
   }
   final instant = DateTime.parse(value).toUtc();
   // Canonical precision is whole seconds: what we store is what we echo.
-  return DateTime.utc(instant.year, instant.month, instant.day, instant.hour,
-      instant.minute, instant.second);
+  return DateTime.utc(
+    instant.year,
+    instant.month,
+    instant.day,
+    instant.hour,
+    instant.minute,
+    instant.second,
+  );
 }
 
 /// Validates trip JSON. Collects every error, not only the first.
@@ -102,12 +114,14 @@ TripValidationResult validateTrip(Map<String, Object?> json) {
   }
 
   if (errors.isNotEmpty) return InvalidTrip(errors);
-  return ValidTrip(Trip(
-    id: id as String,
-    start: start!,
-    end: end!,
-    amount: amount as int,
-    payment: payment!,
-    commission: commission as int,
-  ));
+  return ValidTrip(
+    Trip(
+      id: id as String,
+      start: start!,
+      end: end!,
+      amount: amount as int,
+      payment: payment!,
+      commission: commission as int,
+    ),
+  );
 }

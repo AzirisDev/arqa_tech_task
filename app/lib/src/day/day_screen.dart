@@ -55,10 +55,12 @@ class _DayScreenState extends State<DayScreen> {
   }
 
   Future<void> _addTrip() async {
-    final saved = await Navigator.of(context).push<Trip>(MaterialPageRoute(
-      builder: (_) =>
-          AddTripScreen(api: widget.api, initialDate: _controller.date),
-    ));
+    final saved = await Navigator.of(context).push<Trip>(
+      MaterialPageRoute(
+        builder: (_) =>
+            AddTripScreen(api: widget.api, initialDate: _controller.date),
+      ),
+    );
     if (saved != null) _controller.select(LocalDate.of(saved.start, _offset));
   }
 
@@ -93,13 +95,13 @@ class _DayScreenState extends State<DayScreen> {
         body: switch (_controller.state) {
           DayLoading() => const Center(child: CircularProgressIndicator()),
           DayError(:final message) => _ErrorView(
-              message: message,
-              onRetry: () => _controller.select(_controller.date),
-            ),
+            message: message,
+            onRetry: () => _controller.select(_controller.date),
+          ),
           DayLoaded(:final data) => RefreshIndicator(
-              onRefresh: _controller.refresh,
-              child: _DayContent(data: data, offset: _offset),
-            ),
+            onRefresh: _controller.refresh,
+            child: _DayContent(data: data, offset: _offset),
+          ),
         },
         floatingActionButton: FloatingActionButton.extended(
           key: const Key('add-trip'),
