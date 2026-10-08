@@ -77,9 +77,8 @@ class PaymentChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         child: Text(
           isCash ? 'Наличные' : 'Карта',
-          style: TextStyle(
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
             color: color,
-            fontSize: 12,
             fontWeight: FontWeight.w600,
           ),
         ),

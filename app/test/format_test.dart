@@ -64,6 +64,10 @@ void main() {
     expect(formatDeduction(585), '−585 ₸');
   });
 
+  test('formatDeduction shows zero without a minus sign', () {
+    expect(formatDeduction(0), '0\u00A0₸');
+  });
+
   test('groupThousands', () {
     expect(groupThousands(''), '');
     expect(groupThousands('999'), '999');

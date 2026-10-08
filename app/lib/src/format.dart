@@ -31,8 +31,9 @@ String groupThousands(String digits) {
 String formatMoney(int amount) =>
     '${amount < 0 ? '-' : ''}${groupThousands(amount.abs().toString())}$_nbsp₸';
 
-/// `−585 ₸` — an amount taken away, such as commission.
-String formatDeduction(int amount) => '−${formatMoney(amount)}';
+/// `−585 ₸` — an amount taken away, such as commission; `0 ₸` for zero.
+String formatDeduction(int amount) =>
+    amount == 0 ? formatMoney(0) : '−${formatMoney(amount)}';
 
 /// `1 окт. 2026, Чт`
 String formatDayLong(LocalDate date) =>

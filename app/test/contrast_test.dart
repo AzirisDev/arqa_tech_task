@@ -51,6 +51,39 @@ void main() {
         );
       });
 
+      test('dialog surfaces are neutral and readable (${b.name})', () {
+        final scheme = theme.colorScheme;
+        final containers = [
+          scheme.surfaceContainerLowest,
+          scheme.surfaceContainerLow,
+          scheme.surfaceContainer,
+          scheme.surfaceContainerHigh,
+          scheme.surfaceContainerHighest,
+        ];
+        for (final c in containers) {
+          expect(
+            contrast(scheme.primary, c),
+            greaterThanOrEqualTo(4.5),
+            reason: 'primary on container $c',
+          );
+          expect(
+            contrast(scheme.onSurface, c),
+            greaterThanOrEqualTo(4.5),
+            reason: 'onSurface on container $c',
+          );
+        }
+      });
+
+      test('error text is readable on cards and inputs (${b.name})', () {
+        for (final s in [colors.surfaceCard, colors.inputFill]) {
+          expect(
+            contrast(theme.colorScheme.error, s),
+            greaterThanOrEqualTo(4.5),
+            reason: 'error on $s',
+          );
+        }
+      });
+
       test('onAccent on accents (${b.name})', () {
         for (final a in [colors.net, colors.cash, colors.card]) {
           expect(

@@ -108,6 +108,15 @@ ThemeData buildAppTheme(Brightness brightness) {
         primary: colors.net,
         onPrimary: colors.onAccent,
         surface: background,
+        // Neutral dialog surfaces: the seed-tinted defaults pull the green
+        // primary below AA on light.
+        surfaceDim: isDark ? background : outline,
+        surfaceBright: colors.surfaceCard,
+        surfaceContainerLowest: colors.surfaceCard,
+        surfaceContainerLow: colors.surfaceCard,
+        surfaceContainer: colors.surfaceCard,
+        surfaceContainerHigh: colors.surfaceCard,
+        surfaceContainerHighest: colors.surfaceCard,
         onSurface: text,
         onSurfaceVariant: colors.muted,
         outline: outline,

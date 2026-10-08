@@ -167,4 +167,19 @@ void main() {
     expect(track.width, greaterThan(0));
     expect(track.height, 8);
   });
+
+  testWidgets('the screen title is a header for screen readers', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await pumpDay(
+      tester,
+      FakeApiClient(days: [oct1], dayData: {oct1: dayOf(oct1, sampleTrips())}),
+    );
+    expect(
+      tester.getSemantics(find.text('Дневник смен')),
+      isSemantics(label: 'Дневник смен', isHeader: true),
+    );
+    handle.dispose();
+  });
 }
