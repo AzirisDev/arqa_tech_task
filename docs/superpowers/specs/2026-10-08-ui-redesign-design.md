@@ -23,11 +23,14 @@ Scope: Flutter app only. Server, `trip_core`, API and app logic (validation, ret
 | input fill | `#181B20` | `#F7F8FA` |
 | text | `#ECEEF1` | `#15171A` |
 | muted text | `#9AA0A8` | `#5F6670` |
-| net (green, primary) | `#2BB673` | `#1E9E5E` |
-| cash (orange) | `#E0A33A` | `#C98512` |
-| card payment (blue) | `#3D8BEB` | `#2F74D0` |
+| net (green, primary) | `#2BB673` | `#167A48` |
+| cash (orange) | `#E0A33A` | `#9A5F00` |
+| card payment (blue) | `#5A9CF0` | `#2563B8` |
+| on accent (text/icons on green, orange, blue fills) | `#0B1F14` | `#FFFFFF` |
 
-Components: cards have radius 16 and no elevation (light cards get a 1 px outline). Inputs are filled, outlined, radius 12, with the focus border in green. The primary `FilledButton` is green, stadium-shaped, min height 52, bold label. The FAB is a green circle. Money amounts use bold tabular figures.
+All text colours meet WCAG AA (≥ 4.5:1) on their background. Light accents are darkened, and dark mode uses dark text on accent fills, for that reason.
+
+Components: cards have radius 16 and no elevation (light cards get a 1 px outline). Inputs are filled, outlined, radius 12, with the focus border in green. The primary `FilledButton` is green, stadium-shaped, min height 52, with a bold `onAccent` label. The FAB is a green circle with an `onAccent` icon. Money amounts use bold tabular figures.
 
 ## Formatting (`app/lib/src/format.dart`)
 

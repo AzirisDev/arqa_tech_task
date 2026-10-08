@@ -1594,7 +1594,8 @@ class _PaymentOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = selected ? Colors.white : AppColors.of(context).muted;
+    final colors = AppColors.of(context);
+    final foreground = selected ? colors.onAccent : colors.muted;
     return Expanded(
       child: Semantics(
         button: true,
