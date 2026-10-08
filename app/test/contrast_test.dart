@@ -35,6 +35,22 @@ void main() {
         }
       });
 
+      test('switch is visible when off (${b.name})', () {
+        const off = <WidgetState>{};
+        const on = {WidgetState.selected};
+        final sw = theme.switchTheme;
+        expect(sw.thumbColor!.resolve(off), colors.muted);
+        expect(sw.trackOutlineColor!.resolve(off), colors.muted);
+        expect(sw.trackColor!.resolve(off), colors.inputFill);
+        expect(sw.thumbColor!.resolve(on), colors.onAccent);
+        expect(sw.trackColor!.resolve(on), colors.net);
+        expect(sw.trackOutlineColor!.resolve(on), Colors.transparent);
+        expect(
+          contrast(colors.muted, colors.surfaceCard),
+          greaterThanOrEqualTo(3.0),
+        );
+      });
+
       test('onAccent on accents (${b.name})', () {
         for (final a in [colors.net, colors.cash, colors.card]) {
           expect(

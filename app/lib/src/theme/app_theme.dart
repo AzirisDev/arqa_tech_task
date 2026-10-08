@@ -168,5 +168,22 @@ ThemeData buildAppTheme(Brightness brightness) {
       shape: const CircleBorder(),
     ),
     dividerTheme: DividerThemeData(color: outline),
+    switchTheme: SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.selected)
+            ? colors.onAccent
+            : colors.muted,
+      ),
+      trackColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.selected)
+            ? colors.net
+            : colors.inputFill,
+      ),
+      trackOutlineColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.selected)
+            ? Colors.transparent
+            : colors.muted,
+      ),
+    ),
   );
 }
