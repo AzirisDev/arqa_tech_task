@@ -15,12 +15,16 @@ void main() {
     addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
     await tester.pumpWidget(ShiftDiaryApp(api: FakeApiClient()));
     await tester.pumpAndSettle();
-    return AppColors.of(tester.element(find.byType(DayScreen)));
+    final context = tester.element(find.byType(DayScreen));
+    expect(Theme.of(context).extension<AppColors>(), isNotNull);
+    expect(Theme.of(context).brightness, brightness);
+    return AppColors.of(context);
   }
 
   testWidgets('uses the dark palette when the system is dark', (tester) async {
     final colors = await colorsFor(tester, Brightness.dark);
     expect(colors.net, AppColors.dark.net);
+    expect(colors.onAccent, AppColors.dark.onAccent);
     expect(colors.surfaceCard, AppColors.dark.surfaceCard);
   });
 
@@ -29,6 +33,7 @@ void main() {
   ) async {
     final colors = await colorsFor(tester, Brightness.light);
     expect(colors.net, AppColors.light.net);
+    expect(colors.onAccent, AppColors.light.onAccent);
     expect(colors.surfaceCard, AppColors.light.surfaceCard);
   });
 }

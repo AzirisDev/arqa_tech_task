@@ -10,6 +10,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.surfaceCard,
     required this.inputFill,
     required this.muted,
+    required this.onAccent,
   });
 
   /// Take-home amount; also the primary accent.
@@ -30,22 +31,27 @@ class AppColors extends ThemeExtension<AppColors> {
   /// Secondary text.
   final Color muted;
 
+  /// Text and icons drawn on net/cash/card fills.
+  final Color onAccent;
+
   static const dark = AppColors(
     net: Color(0xFF2BB673),
     cash: Color(0xFFE0A33A),
-    card: Color(0xFF3D8BEB),
+    card: Color(0xFF5A9CF0),
     surfaceCard: Color(0xFF1F2228),
     inputFill: Color(0xFF181B20),
     muted: Color(0xFF9AA0A8),
+    onAccent: Color(0xFF0B1F14),
   );
 
   static const light = AppColors(
-    net: Color(0xFF1E9E5E),
-    cash: Color(0xFFC98512),
-    card: Color(0xFF2F74D0),
+    net: Color(0xFF167A48),
+    cash: Color(0xFF9A5F00),
+    card: Color(0xFF2563B8),
     surfaceCard: Color(0xFFFFFFFF),
     inputFill: Color(0xFFF7F8FA),
     muted: Color(0xFF5F6670),
+    onAccent: Color(0xFFFFFFFF),
   );
 
   /// Colours of the current theme; light colours when the theme has none
@@ -61,6 +67,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? surfaceCard,
     Color? inputFill,
     Color? muted,
+    Color? onAccent,
   }) => AppColors(
     net: net ?? this.net,
     cash: cash ?? this.cash,
@@ -68,6 +75,7 @@ class AppColors extends ThemeExtension<AppColors> {
     surfaceCard: surfaceCard ?? this.surfaceCard,
     inputFill: inputFill ?? this.inputFill,
     muted: muted ?? this.muted,
+    onAccent: onAccent ?? this.onAccent,
   );
 
   @override
@@ -80,6 +88,7 @@ class AppColors extends ThemeExtension<AppColors> {
       surfaceCard: Color.lerp(surfaceCard, other.surfaceCard, t)!,
       inputFill: Color.lerp(inputFill, other.inputFill, t)!,
       muted: Color.lerp(muted, other.muted, t)!,
+      onAccent: Color.lerp(onAccent, other.onAccent, t)!,
     );
   }
 }
@@ -97,7 +106,7 @@ ThemeData buildAppTheme(Brightness brightness) {
         brightness: brightness,
       ).copyWith(
         primary: colors.net,
-        onPrimary: Colors.white,
+        onPrimary: colors.onAccent,
         surface: background,
         onSurface: text,
         onSurfaceVariant: colors.muted,
@@ -143,7 +152,7 @@ ThemeData buildAppTheme(Brightness brightness) {
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         backgroundColor: colors.net,
-        foregroundColor: Colors.white,
+        foregroundColor: colors.onAccent,
         minimumSize: const Size(64, 52),
         shape: const StadiumBorder(),
         textStyle: const TextStyle(
@@ -155,7 +164,7 @@ ThemeData buildAppTheme(Brightness brightness) {
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: colors.net,
-      foregroundColor: Colors.white,
+      foregroundColor: colors.onAccent,
       shape: const CircleBorder(),
     ),
     dividerTheme: DividerThemeData(color: outline),
