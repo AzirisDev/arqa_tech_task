@@ -90,15 +90,45 @@ void main() {
       }
     });
 
-    test('UTC Z and fractional seconds are accepted', () {
-      expect(
-        errorsOf({
-          ...sample(),
-          'start': '2026-10-01T03:10:00Z',
-          'end': '2026-10-01T03:32:00.250Z',
-        }),
-        isEmpty,
-      );
+    test('UTC Z and fractional seconds are accepted, fraction truncated', () {
+      final json = {
+        ...sample(),
+        'start': '2026-10-01T03:10:00Z',
+        'end': '2026-10-01T03:32:00.250Z',
+      };
+      expect(errorsOf(json), isEmpty);
+      final trip = (validateTrip(json) as ValidTrip).trip;
+      expect(trip.end, DateTime.utc(2026, 10, 1, 3, 32));
+    });
+
+    test('fractional seconds round-trip through toJson', () {
+      final result = validateTrip({
+        ...sample(),
+        'start': '2026-10-01T08:10:00.999+05:00',
+      });
+      final trip = (result as ValidTrip).trip;
+      expect(Trip.fromJson(trip.toJson(plus5)), trip);
+    });
+
+    test('offsets out of range are rejected', () {
+      for (final offset in ['+99:99', '+15:00', '+05:60']) {
+        expect(
+          errorsOf({...sample(), 'start': '2026-10-01T08:10:00$offset'}),
+          {'start': 'Некорректное время начала'},
+          reason: offset,
+        );
+      }
+      for (final offset in ['+14:00', '-12:00']) {
+        expect(
+          errorsOf({
+            ...sample(),
+            'start': '2026-10-01T08:10:00$offset',
+            'end': '2026-10-02T08:10:00$offset',
+          }),
+          isEmpty,
+          reason: offset,
+        );
+      }
     });
   });
 

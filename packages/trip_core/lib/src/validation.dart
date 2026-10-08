@@ -20,10 +20,13 @@ const maxIdLength = 64;
 
 final _isoWithOffset = RegExp(
   r'^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,6})?)?'
-  r'(?:Z|[+-]\d{2}:\d{2})$',
+  r'(?:Z|[+-](\d{2}):(\d{2}))$',
 );
 
 /// Parses an ISO-8601 timestamp that carries an explicit offset or `Z`.
+///
+/// Fractional seconds are accepted but truncated. The offset must be within
+/// +-14:59.
 ///
 /// Returns null for anything else: strings without an offset (which
 /// `DateTime.parse` would silently read as device-local time) and impossible
@@ -32,6 +35,9 @@ DateTime? parseInstant(Object? value) {
   if (value is! String) return null;
   final match = _isoWithOffset.firstMatch(value);
   if (match == null) return null;
+  final offsetHours = int.tryParse(match[7] ?? '0')!;
+  final offsetMinutes = int.tryParse(match[8] ?? '0')!;
+  if (offsetHours > 14 || offsetMinutes > 59) return null;
   final fields = [for (var i = 1; i <= 6; i++) int.parse(match[i] ?? '0')];
   final wall = DateTime.utc(
       fields[0], fields[1], fields[2], fields[3], fields[4], fields[5]);
@@ -46,7 +52,10 @@ DateTime? parseInstant(Object? value) {
   for (var i = 0; i < fields.length; i++) {
     if (fields[i] != normalized[i]) return null;
   }
-  return DateTime.parse(value).toUtc();
+  final instant = DateTime.parse(value).toUtc();
+  // Canonical precision is whole seconds: what we store is what we echo.
+  return DateTime.utc(instant.year, instant.month, instant.day, instant.hour,
+      instant.minute, instant.second);
 }
 
 /// Validates trip JSON. Collects every error, not only the first.
