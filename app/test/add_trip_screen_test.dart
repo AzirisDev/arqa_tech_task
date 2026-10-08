@@ -118,6 +118,34 @@ void main() {
     expect(find.byType(DatePickerDialog), findsNothing);
   });
 
+  testWidgets('payment toggle starts empty and keeps the last choice', (
+    tester,
+  ) async {
+    final api = FakeApiClient();
+    await openForm(tester, api);
+
+    await tester.enterText(find.byKey(const Key('start-time')), '08:10');
+    await tester.enterText(find.byKey(const Key('end-time')), '08:32');
+    await tester.enterText(find.byKey(const Key('amount')), '2400');
+    await tester.enterText(find.byKey(const Key('commission')), '360');
+    await submit(tester);
+
+    expect(
+      find.text('Выберите способ оплаты: наличные или карта'),
+      findsOneWidget,
+    );
+    expect(api.savedTrips, isEmpty);
+
+    await tester.ensureVisible(find.text('Карта'));
+    await tester.tap(find.text('Карта'));
+    await tester.pump();
+    await tester.tap(find.text('Наличные'));
+    await tester.pump();
+    await submit(tester);
+
+    expect(api.savedTrips.single.payment, PaymentMethod.cash);
+  });
+
   testWidgets('end before start is rejected locally', (tester) async {
     final api = FakeApiClient();
     await openForm(tester, api);

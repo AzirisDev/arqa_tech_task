@@ -38,7 +38,7 @@ iOS Simulator ходит на `http://localhost:8080`, Android Emulator — на
 (cd app && flutter test)
 ```
 
-Сейчас: trip_core — 39, server — 24, app — 72 теста.
+Сейчас: trip_core — 39, server — 24, app — 77 тестов.
 
 ## Что сделано
 
