@@ -149,6 +149,8 @@ void main() {
     final card = tester.getSize(find.byKey(const Key('split-card'))).width;
     expect(cash, greaterThan(0));
     expect(cash, lessThan(card)); // 1 500 ₸ cash vs 2 400 ₸ card
+    expect(tester.getSize(find.byKey(const Key('split-cash'))).height, 8);
+    expect(tester.getSize(find.byKey(const Key('split-card'))).height, 8);
   });
 
   testWidgets('empty day shows a hint and no split segments', (tester) async {
@@ -159,5 +161,8 @@ void main() {
     expect(find.text('0 поездок'), findsOneWidget);
     expect(find.byKey(const Key('split-cash')), findsNothing);
     expect(find.byKey(const Key('split-card')), findsNothing);
+    final track = tester.getSize(find.byKey(const Key('split-track')));
+    expect(track.width, greaterThan(0));
+    expect(track.height, 8);
   });
 }

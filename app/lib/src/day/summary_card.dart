@@ -94,10 +94,15 @@ class _PaymentSplitBar extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(4),
       child: SizedBox(
+        width: double.infinity,
         height: 8,
         child: cash + card == 0
-            ? ColoredBox(color: Theme.of(context).colorScheme.outline)
+            ? ColoredBox(
+                key: const Key('split-track'),
+                color: Theme.of(context).colorScheme.outline,
+              )
             : Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   if (cash > 0)
                     Expanded(
