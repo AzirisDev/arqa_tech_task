@@ -61,7 +61,12 @@ class _DayScreenState extends State<DayScreen> {
             AddTripScreen(api: widget.api, initialDate: _controller.date),
       ),
     );
-    if (saved != null) _controller.select(LocalDate.of(saved.start, _offset));
+    if (!mounted) return;
+    if (saved != null) {
+      _controller.select(LocalDate.of(saved.start, _offset));
+    } else {
+      _controller.refresh();
+    }
   }
 
   @override

@@ -106,4 +106,33 @@ void main() {
     expect(find.text('08:10–08:32 · 22 мин'), findsOneWidget);
     expect(find.text(formatMoney(2040)), findsOneWidget); // net 2400 − 360
   });
+
+  testWidgets('closing the form after a conflict refreshes the day', (
+    tester,
+  ) async {
+    final api = FakeApiClient(
+      days: [oct1],
+      dayData: {oct1: dayOf(oct1, sampleTrips())},
+    );
+    api.onSaveTrip = (_) async => throw const ConflictFailure();
+    await pumpDay(tester, api);
+
+    await tester.tap(find.byKey(const Key('add-trip')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('start-time')), '08:10');
+    await tester.enterText(find.byKey(const Key('end-time')), '08:32');
+    await tester.enterText(find.byKey(const Key('amount')), '2400');
+    await tester.enterText(find.byKey(const Key('commission')), '360');
+    await tester.ensureVisible(find.text('Наличные'));
+    await tester.tap(find.text('Наличные'));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('submit')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('submit'))); // now «Закрыть»
+    await tester.pumpAndSettle();
+
+    expect(api.fetchedDates.sublist(api.fetchedDates.length - 2), [oct1, oct1]);
+    expect(find.text('На руки'), findsOneWidget);
+  });
 }
