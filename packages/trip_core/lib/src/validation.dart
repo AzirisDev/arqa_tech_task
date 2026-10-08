@@ -35,8 +35,8 @@ DateTime? parseInstant(Object? value) {
   if (value is! String) return null;
   final match = _isoWithOffset.firstMatch(value);
   if (match == null) return null;
-  final offsetHours = int.tryParse(match[7] ?? '0')!;
-  final offsetMinutes = int.tryParse(match[8] ?? '0')!;
+  final offsetHours = int.parse(match[7] ?? '0');
+  final offsetMinutes = int.parse(match[8] ?? '0');
   if (offsetHours > 14 || offsetMinutes > 59) return null;
   final fields = [for (var i = 1; i <= 6; i++) int.parse(match[i] ?? '0')];
   final wall = DateTime.utc(

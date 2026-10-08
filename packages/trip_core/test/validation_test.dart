@@ -116,6 +116,7 @@ void main() {
         'start': '2026-10-01T08:10:00.999+05:00',
       });
       final trip = (result as ValidTrip).trip;
+      expect(trip.start, DateTime.utc(2026, 10, 1, 3, 10)); // truncated
       expect(Trip.fromJson(trip.toJson(plus5)), trip);
     });
 
